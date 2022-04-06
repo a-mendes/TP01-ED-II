@@ -1,0 +1,15 @@
+Instruções makefile
+________________________________________________________
+
+• Compilar e Gerar Executável 
+	make
+	make all
+________________________________________________________
+
+• Compilar e Gerar Executável e Executar
+	make go
+________________________________________________________
+
+• Limpar cmd e arquivos de compilação (.exe e .o)
+	make clean
+________________________________________________________
