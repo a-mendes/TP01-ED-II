@@ -1,10 +1,13 @@
 #Windows Makefile
 
-all: main.o sequencial.o binaria.o b.o b_estrela.o
-	@gcc ./obj/main.o ./obj/sequencial.o ./obj/binaria.o ./obj/b.o ./obj/b_estrela.o -o TP1
+all: main.o gerador_arquivo.o sequencial.o binaria.o b.o b_estrela.o
+	@gcc ./obj/main.o ./obj/gerador_arquivo.o ./obj/sequencial.o ./obj/binaria.o ./obj/b.o ./obj/b_estrela.o -o TP1
 
 main.o: ./src/main.c
 	@gcc -c ./src/main.c -o ./obj/main.o
+
+gerador_arquivo.o: ./src/gerador_arquivo.c
+	@gcc -c ./src/gerador_arquivo.c -o ./obj/gerador_arquivo.o
 
 sequencial.o: ./src/sequencial.c
 	@gcc -c ./src/sequencial.c -o ./obj/sequencial.o
@@ -26,5 +29,5 @@ go:
 	@make run
 
 clean:
-	@del *.exe obj
+	@del *.exe obj data
 	@cls

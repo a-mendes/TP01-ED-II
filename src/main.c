@@ -3,6 +3,7 @@
 #include "b.h"
 #include "b_estrela.h"
 #include "binaria.h"
+#include "gerador_arquivo.h"
 #include "sequencial.h"
 
 // 1 - acesso sequencial
@@ -16,23 +17,36 @@ int main(int argc, char const *argv[]) {
     printf("Digite o tipo de pesquisa desejada:\n");
     int metodo = atoi(argv[1]);
 
+    /** Exemplo de geração de arquivo aleatório com 50 registros
+     *
+     * char *nomeArquivo = gerarArquivoAleatorio(50);
+     * FILE *file;
+     * file = fopen(nomeArquivo, "rb");
+     *
+     * int chaves[50];
+     * fread(chaves, sizeof(int), 50, file);
+     *
+     * for (int i = 0; i < 50; ++i) {
+     * 		printf("%d ", chaves[i]);
+     * }
+     */
+
     // Implementar menu de acesso às pesquisas
     switch (metodo) {
         case 1:  // acesso sequencial
-            
-            sequencial();
+            // sequencial();
             break;
         case 2:  // árvore binaria
-            binaria();
+            // binaria();
             break;
         case 3:  // árvore B
-            b();
+            // b();
             break;
         case 4:  // árvore B estrela
-            b_estrela();
+            // b_estrela();
             break;
         default:  // opção inválida
-            printf("Opção inválida!\n");
+            printf("Opcao invalida!\n");
             break;
     }
 
