@@ -19,6 +19,7 @@ int main(int argc, char const *argv[]) {
     // Implementar menu de acesso às pesquisas
     switch (metodo) {
         case 1:  // acesso sequencial
+            
             sequencial();
             break;
         case 2:  // árvore binaria
