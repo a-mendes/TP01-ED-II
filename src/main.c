@@ -21,6 +21,8 @@ void exemploUsoGeradorArquivo() {
     }
 }
 
+// ./TP1.exe (metodo) (quantidade) (situacao) (chave)
+
 int main(int argc, char const *argv[]) {
     printf("TP1 - Estrutura de Dados II\n");
 
@@ -34,7 +36,7 @@ int main(int argc, char const *argv[]) {
     // Implementar menu de acesso às pesquisas
     switch (metodo) {
         case 1:  // acesso sequencial
-            // sequencial();
+            sequencial(quantidade, situacao, chave);
             break;
         case 2:  // árvore binaria
             // binaria();
