@@ -19,7 +19,7 @@ void Pesquisa(TipoRegistro *x, TipoApontador *Ap) {
     }
 
     i = 1;
-    while(i < Pag->UU.U1.ne && x->chave > Pag->UU.U1.re[i - 1].Chave) i++;
+    while(i < Pag->UU.U1.ne && x->chave > Pag->UU.U1.re[i - 1].chave) i++;
 
     if(x->chave == Pag->UU.U1.re[i - 1].chave)
         *x = Pag->UU.U1.re[i - 1];

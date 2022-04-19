@@ -2,6 +2,7 @@
 #define b_estrela_h
 
 #define TAM_STRING 5000  
+#define MM 2    
 
 //definir cabeçalho de função para pesquisa em arvore b_estrela
 typedef long TipoChave;
