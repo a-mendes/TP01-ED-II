@@ -7,32 +7,29 @@
 #include "gerador_arquivo.h"
 #include "sequencial.h"
 
-// 1 - acesso sequencial
-// 2 - árvore binaria
-// 3 - árvore B
-// 4 - árvore B estrela
-
 void exemploUsoGeradorArquivo() {
-	//Exemplo de geração de arquivo com 50 registros
-	char *nomeArquivo = gerarArquivoDescendente(50);
-	FILE *file;
-	file = fopen(nomeArquivo, "rb");
-	TRegistro registros[50];
-	fread(registros, sizeof(TRegistro), 50, file);
-	for (int i = 0; i < 50; ++i) {
-			printf("%d\t", registros[i].chave);
-			printf("%lld\t", registros[i].dado1);
-			printf("%s\n", registros[i].dado2);
-	}
+    // Exemplo de geração de arquivo com 50 registros
+    char *nomeArquivo = gerarArquivoDescendente(50);
+    FILE *file;
+    file = fopen(nomeArquivo, "rb");
+    TRegistro registros[50];
+    fread(registros, sizeof(TRegistro), 50, file);
+    for (int i = 0; i < 50; ++i) {
+        printf("%d\t", registros[i].chave);
+        printf("%lld\t", registros[i].dado1);
+        printf("%s\n", registros[i].dado2);
+    }
 }
 
 int main(int argc, char const *argv[]) {
     printf("TP1 - Estrutura de Dados II\n");
 
-    printf("Digite o tipo de pesquisa desejada:\n");
-    int metodo = atoi(argv[1]);
+    int metodo = atoi(argv[1]);      // metodo de pesquisa a ser executado (1 - sequencial, 2 - binaria, 3 - B, 4 - B estrela)
+    int quantidade = atoi(argv[2]);  // Quantidade de registros do arquivo (100, 200, 2k, 20k, 200k, 2kk)
+    int situacao = atoi(argv[3]);    // situação de ordem do arquivo (1 - Crescente, 2 - Decrescente, 3 - Desordenado)
+    int chave = atoi(argv[4]);       // chave a ser pesquisada no arquivo
 
-	//exemploUsoGeradorArquivo();
+    // exemploUsoGeradorArquivo();
 
     // Implementar menu de acesso às pesquisas
     switch (metodo) {
