@@ -1,6 +1,6 @@
 #include "b_estrela.h"
 
-void Pesquisa(TipoRegistro *x, TipoApontador *Ap) {
+void Pesquisa(TRegistro *x, TipoApontador *Ap) {
     int i;
     TipoApontador Pag;
     Pag = *Ap;
