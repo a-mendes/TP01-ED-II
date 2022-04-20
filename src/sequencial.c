@@ -1,11 +1,13 @@
 #include "sequencial.h"
 
+#include <string.h>
+
 // Pré-processamento dos dados
 int sequencial(int quantidade, int situacao, int chave) {
-    Indice *tabela;  // tabela de índices
-    TRegistro *aux;  // item do arquivo de registros
-    TRegistro item;  // chave de busca
-    double size;     // tamanho da tabela de índices
+    Indice *tabela;              // tabela de índices
+    TRegistro aux[ITENSPAGINA];  // item auxiliar para leitura de registros
+    TRegistro item;              // chave de busca
+    double tamanho;              // tamanho da tabela de índices
 
     // Gera o arquivo de dados com a quantidade de registros informada
     char *registros = gerarArquivoAscendente(quantidade);
@@ -15,30 +17,31 @@ int sequencial(int quantidade, int situacao, int chave) {
 
     // Descobre a quantidade de páginas para alocar a tabela de índices
     if (quantidade % ITENSPAGINA == 0) {
-        size = quantidade / ITENSPAGINA;
+        tamanho = quantidade / ITENSPAGINA;
     } else {
-        size = quantidade / ITENSPAGINA + 1;
+        tamanho = quantidade / ITENSPAGINA + 1;
     }
 
-    // Aloca a tabela de índices e o vetor de registros
-    tabela = (Indice *)malloc(size * sizeof(Indice));
-    aux = (TRegistro *)malloc(ITENSPAGINA * sizeof(TRegistro));
+    // Aloca a tabela de índices
+    tabela = (Indice *)malloc(tamanho * sizeof(Indice));
 
-    for (int i = 0; i < size; i++) {                                 // percorre todos os registros
-        fread(&aux, sizeof(TRegistro), (ITENSPAGINA - 1), arquivo);  // lê os 20 registros (1 a 20)
+    for (int i = 0; i < tamanho; i++) {                              // percorre todas as páginas
+        fread(&aux, sizeof(TRegistro), (ITENSPAGINA - 1), arquivo);  // lê os 20 registros da página
         tabela[i].chave = aux[0].chave;                              // salva a chave do primeiro registro na tabela de indices
     }
+
+    fseek(arquivo, 0, SEEK_SET);  // retorna o ponteiro para o início do arquivo
 
     item.chave = chave;
 
     // função de busca
-    if (pesquisa(tabela, size, &item, arquivo)) {
+    if (pesquisa(tabela, tamanho, quantidade, &item, arquivo)) {
         printf("Registro encontrado!\n");
         printf("Chave: %d\n", item.chave);
         printf("Valor: %s\n", item.dado1);
         printf("Nome: %s\n", item.dado2);
-    } else{
-        printf("Registro não encontrado!\n");
+    } else {
+        printf("Registro nao encontrado!\n");
         printf("Chave: %d\n", item.chave);
     }
 
@@ -46,44 +49,47 @@ int sequencial(int quantidade, int situacao, int chave) {
 }
 
 // Busca sequencial indexada
-int pesquisa(Indice tabela[], int tamanho, TRegistro *item, FILE *arquivo) {
-    TRegistro pagina[MAXTABELA];
-    int i = 0;
-    int qntItens;
-    long position;
+int pesquisa(Indice *tabela, int tamanho, int quantidade, TRegistro *item, FILE *arquivo) {
+    TRegistro *pagina;  // página de registros
+    int contador = 0;   // contador de páginas
+    int qntItens;       // quantidade de itens na página
+    int position;       // posição do arquivo
 
-    //  busca pela pagina onde o item pode estar inserido
-    while (i < tamanho && item->chave >= tabela[i].chave) i++;
+    //  busca pela pagina onde o item está inserido
+    for (int i = 0; i < tamanho; i++)
+        if (item->chave >= tabela[i].chave)
+            contador++;
 
-    // se i = 0 então o item não se encontra na página. (item < 1º item da página)
-    if (i == 0) {
-        return 0;
+    if (contador == 0) return 0; // item não encontrado 
+
+    // a ultima página pode não estar completa
+    // Alert: REFATORAR
+    if (quantidade % ITENSPAGINA == 0) { // todas as paginas tem o mesmo tamanho
+        qntItens = ITENSPAGINA;
     } else {
-        // a ultima página pode não estar completa
-        if (i < tamanho) {
+        if (item->chave >= tabela[tamanho - 1].chave)
+            qntItens = quantidade % ITENSPAGINA;
+        else
             qntItens = ITENSPAGINA;
-        } else {
-            fseek(arquivo, 0, SEEK_END);
-            qntItens = (ftell(arquivo) / sizeof(TRegistro)) % ITENSPAGINA;
-
-            if (qntItens == 0) {
-                qntItens = ITENSPAGINA;
-            }
-        }
-
-        // lê a página desejada do arquivo
-        position = (tabela[i - 1].chave) * ITENSPAGINA * sizeof(TRegistro);
-        position = (tabela[i - 1].chave) * ITENSPAGINA * sizeof(TRegistro);
-
-        fseek(arquivo, position, SEEK_SET);
-        fread(&pagina, sizeof(TRegistro), qntItens, arquivo);
-
-        // pesquisa sequencial na página lida
-        for (i = 0; i < qntItens; i++)
-            if (pagina[i].chave == item->chave) {
-                *item = pagina[i];
-                return 1;
-            }
-        return 0;
     }
+
+    pagina = (TRegistro *)malloc(qntItens * sizeof(TRegistro));
+
+    // lê a página desejada do arquivo
+    position = contador * ITENSPAGINA * sizeof(TRegistro);
+
+    fseek(arquivo, position, SEEK_SET);
+    fread(&pagina, sizeof(TRegistro), 1, arquivo);
+
+    // pesquisa sequencial na página lida
+    // Alert: REFATORAR -> busca binária.
+    for (int i = 0; i < qntItens; i++) {
+        printf("%d\n", pagina[i].chave);
+        if (pagina[i].chave == item->chave) {
+            *item = pagina[i];
+            return 1;
+        }
+    }
+
+    return 0;
 }

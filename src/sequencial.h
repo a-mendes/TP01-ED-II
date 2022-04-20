@@ -15,7 +15,7 @@ typedef struct {
     int chave;
 } Indice;
 
-int pesquisa(Indice tabela[], int tamanho, TRegistro *item, FILE *arquivo);
+int pesquisa(Indice *tabela, int tamanho, int quantidade, TRegistro *item, FILE *arquivo);
 int sequencial(int quantidade, int situacao, int chave);
 
 #endif
