@@ -102,7 +102,9 @@ char* gerarArquivoOrdenado(int numeroRegistros, int tipoOrdenacao){
         arquivoAleatorio = fopen(nomeArquivoAleatorio, "rb");
     }
 
-    TRegistro registros[numeroRegistros];
+	TRegistro *registros = malloc(numeroRegistros * sizeof(TRegistro));
+    //TRegistro registros[numeroRegistros];
+
 	fread(registros, sizeof(TRegistro), numeroRegistros, arquivoAleatorio);
     fclose(arquivoAleatorio);
 
@@ -117,6 +119,7 @@ char* gerarArquivoOrdenado(int numeroRegistros, int tipoOrdenacao){
     fwrite (registros, sizeof(TRegistro), numeroRegistros, arquivo);
 
     fclose(arquivo);
+	free(registros);
 
 	return nomeArquivo;
 }
@@ -152,7 +155,9 @@ char* gerarArquivoAleatorio(int numeroRegistros) {
     }
 
     //Randomizando chaves
-    TRegistro registros[numeroRegistros];
+	TRegistro *registros = malloc(numeroRegistros * sizeof(TRegistro)); // Para que seja possivel gerar mais elementos
+    //TRegistro registros[numeroRegistros];
+
     srand(time(NULL));
     for (int i = 0; i < numeroRegistros; i++){
     	registros[i].chave = rand() % 1000;
@@ -168,6 +173,7 @@ char* gerarArquivoAleatorio(int numeroRegistros) {
     fwrite (registros, sizeof(TRegistro), numeroRegistros, arquivo);
 
     fclose(arquivo);
+	free(registros);
 
     return nomeArquivo;
 }
