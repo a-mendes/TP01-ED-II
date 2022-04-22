@@ -4,7 +4,7 @@
 typedef struct {
 	int chave;
 	long long dado1;
-	char dado2[5000]; 
+	char dado2[30]; 
 } TRegistro;
 
 // 1

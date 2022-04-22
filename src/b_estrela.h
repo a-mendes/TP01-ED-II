@@ -1,4 +1,4 @@
-#ifndef b_estrela_h
+/* #ifndef b_estrela_h
 #define b_estrela_h
 
 #include "gerador_arquivo.h"
@@ -34,3 +34,4 @@ void Pesquisa(TRegistro *x, TipoApontador *Ap);
 
 
 #endif
+ */

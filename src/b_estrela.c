@@ -1,4 +1,4 @@
-#include "b_estrela.h"
+/* #include "b_estrela.h"
 
 void Pesquisa(TRegistro *x, TipoApontador *Ap) {
     int i;
@@ -25,4 +25,4 @@ void Pesquisa(TRegistro *x, TipoApontador *Ap) {
         *x = Pag->UU.U1.re[i - 1];
     else 
         printf("TipoRegistro nao esta presente na arvore\n");
-}
+} */
