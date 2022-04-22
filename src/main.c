@@ -29,14 +29,31 @@ int main(int argc, char const *argv[]) {
     int metodo = atoi(argv[1]);      // metodo de pesquisa a ser executado (1 - sequencial, 2 - binaria, 3 - B, 4 - B estrela)
     int quantidade = atoi(argv[2]);  // Quantidade de registros do arquivo (100, 200, 2k, 20k, 200k, 2kk)
     int situacao = atoi(argv[3]);    // situação de ordem do arquivo (1 - Crescente, 2 - Decrescente, 3 - Desordenado)
-    int chave = atoi(argv[4]);       // chave a ser pesquisada no arquivo
+    int modo = atoi(argv[4]);        // modo de execução (1- automático ou 2- manual)
+    int chave = atoi(argv[5]);       // chave a ser pesquisada no arquivo
 
     // exemploUsoGeradorArquivo();
 
     // Implementar menu de acesso às pesquisas
     switch (metodo) {
         case 1:  // acesso sequencial
-            sequencial(quantidade, situacao, chave);
+            printf("### Pesquisa sequencial ###\n");
+
+            if (modo == 1) {
+                sequencial(quantidade, situacao, chave);
+            } else if (modo == 2) {
+                for (int i = 0; i < 20; i++) {
+                    printf("Pesquisa de numero %d\n", i + 1);
+
+                    int chaveAuto = rand() % 1000;
+                    printf("Chave: %d\n", chaveAuto);
+
+                    sequencial(quantidade, situacao, chaveAuto);
+                    printf("===============================\n");
+                }
+            } else
+                printf("Modo de execução inválido\n");
+
             break;
         case 2:  // árvore binaria
             // binaria();
