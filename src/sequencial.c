@@ -20,8 +20,6 @@ int sequencial(int quantidade, int situacao, int chave) {
         tamanho = quantidade / ITENSPAGINA + 1;
     }
 
-    fseek(arquivo, 0, SEEK_SET);  // retorna o ponteiro para o início do arquivo
-
     // Aloca a tabela de índices
     tabela = (Indice *)malloc(tamanho * sizeof(Indice));
 
@@ -62,12 +60,12 @@ int pesquisa(Indice *tabela, int tamanho, int quantidade, TRegistro *item, FILE 
     int position;       // posição do arquivo
 
     //  busca pela pagina onde o registro está inserido
-    for (int i = 0; i < tamanho; i++)
+    for (int i = 0; i < tamanho; i++) {
         if (item->chave >= tabela[i].chave)
             contador++;
+    }
 
     if (contador == 0) {
-        printf("saiu\n");
         return 0;  // registro não encontrado
     }
 
@@ -88,9 +86,7 @@ int pesquisa(Indice *tabela, int tamanho, int quantidade, TRegistro *item, FILE 
     fseek(arquivo, position, SEEK_SET);  // posiciona o ponteiro no arquivo
 
     // lê os registros da página onde contém o item
-    for (int i = 0; i < ITENSPAGINA; i++) {
-        fread(&pagina[i], sizeof(TRegistro), 1, arquivo);
-    }
+    fread(&pagina, sizeof(TRegistro), qntRegistros, arquivo);
 
     // Utiliza da busca binária para encontrar o item procurado
     int left = 0;
