@@ -10,4 +10,7 @@ char* gerarArquivoDescendente(int numeroRegistros);
 // 3
 char* gerarArquivoAleatorio(int numeroRegistros);
 
+// 4
+char* gerarArquivoOrdenado(int numeroRegistros, int tipoOrdenacao);
+
 #endif
