@@ -12,10 +12,8 @@ int b(int quantidade, int situacao, int chave, int opcional) {
     // variáveis para medir o tempo de execução
     clock_t startIndice, endIndice;
     double time;
-
     // Gera o arquivo com a quantidade de registros informada
     char *registros = gerarArquivoOrdenado(quantidade, situacao);
-
     // Abre o arquivo de registros
     FILE *arquivo = fopen(registros, "rb");
 
@@ -25,43 +23,62 @@ int b(int quantidade, int situacao, int chave, int opcional) {
 
     startIndice = clock();  // inicia a contagem do tempo
 
-    b_TipoApontador tipo;
-    b_Inicializa(&tipo);
-    TRegistro reg;
-    reg.chave = 10;
-    reg.dado1 = 1;
-    strcpy(reg.dado2, "jair\0");
-    b_Insere(reg, &tipo);
-
-    reg.chave = 30;
-    reg.dado1 = 4000;
-    strcpy(reg.dado2, "zap");
-    b_Insere(reg, &tipo);
-    b_Imprime(tipo);
-
-    reg.chave = 30;
-    b_Pesquisa(&reg, tipo);
-    printf("%lld %s ", reg.dado1, reg.dado2);
-
-    printf("\n");
-    endIndice = clock();                                            // finaliza o cronômetro
-    time = ((double)(endIndice - startIndice)) / CLOCKS_PER_SEC;    // calcula o tempo de execução
-    printf("Tempo de execucao (criacao de indices): %lf\n", time);  // imprime o tempo de execução
-
-    rewind(arquivo);  // retorna o ponteiro para o início do arquivo
+    b_TipoApontador arvore = montarArvoreBFromArquivo(quantidade, arquivo);
 
     fclose(arquivo);  // fecha o arquivo de registros
 
+    if (chave != -1) {
+        b_PesquisaComTimer(chave, arvore);
+    } else {
+        for (int i = 0; i < 20; i++) {
+            b_PesquisaComTimer(rand() % 1000, arvore);
+        }
+    }
+
     return 0;
+}
+
+void b_PesquisaComTimer(int chave, b_TipoApontador arvore) {
+    clock_t startSearch, endSearch;
+    startSearch = clock();
+
+    TRegistro item = {.chave = chave, .dado1 = 0, .dado2 = 0};
+    if (b_Pesquisa(&item, arvore)) {
+        printf("Chave %d presente | Dado 1: %lld, Dado2: %s", item.chave, item.dado1, item.dado2);
+    } else {
+        printf("Chave %d presente nao esta presente", chave);
+    }
+
+    endSearch = clock();
+
+    printf("\nTempo de execucao (leitura do arquivo): %lf\n\n", ((double)(endSearch - startSearch)));  // imprime o tempo de execução
+}
+
+b_TipoApontador montarArvoreBFromArquivo(int quantidade, FILE *arquivo) {
+    b_TipoApontador arvore;
+    b_Inicializa(&arvore);
+
+    rewind(arquivo);
+    TRegistro *registros = malloc(ITENSPAGINA * sizeof(TRegistro));
+    const int qntPag = quantidade / ITENSPAGINA;
+
+    for (int i = 0; i < qntPag; ++i) {
+        fread(registros, sizeof(TRegistro), ITENSPAGINA, arquivo);
+        for (int j = 0; j < ITENSPAGINA; j++) {
+            b_Insere(registros[j], &arvore);
+        }
+    }
+
+    return arvore;
 }
 
 void b_Inicializa(b_TipoApontador *Arvore) {
     (*Arvore) = NULL;
 }
 
-void b_Pesquisa(TRegistro *x, b_TipoApontador Ap) {
+int b_Pesquisa(TRegistro *x, b_TipoApontador Ap) {
     if (Ap == NULL) {
-        printf("TipoRegistro nao esta presente na arvore");
+        return 0;
     }
 
     long i = 1;
@@ -71,13 +88,13 @@ void b_Pesquisa(TRegistro *x, b_TipoApontador Ap) {
 
     if (x->chave == Ap->r[i - 1].chave) {
         *x = Ap->r[i - 1];
-        return;
+        return 1;
     }
 
     if (x->chave < Ap->r[i - 1].chave) {
-        b_Pesquisa(x, Ap->p[i - 1]);
+        return b_Pesquisa(x, Ap->p[i - 1]);
     } else {
-        b_Pesquisa(x, Ap->p[i - 1]);
+        return b_Pesquisa(x, Ap->p[i]);
     }
 }
 
@@ -125,7 +142,6 @@ void b_Ins(TRegistro Reg, b_TipoApontador Ap, short *Cresceu,
         i++;
 
     if (Reg.chave == Ap->r[i - 1].chave) {
-        printf("Erro: registro ja esta presente\n");
         *Cresceu = 0;
         return;
     }

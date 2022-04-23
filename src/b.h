@@ -20,7 +20,7 @@ typedef struct b_TipoPagina {
 
 void b_Inicializa(b_TipoApontador *Arvore);
 
-void b_Pesquisa(TRegistro *x, b_TipoApontador Ap);
+int b_Pesquisa(TRegistro *x, b_TipoApontador Ap);
 
 void b_Imprime(b_TipoApontador arvore);
 
@@ -39,5 +39,9 @@ void b_Ret(b_TipoChave Ch, b_TipoApontador *Ap, short *Diminuiu);
 void b_Retira(b_TipoChave Ch, b_TipoApontador *Ap);
 
 int b(int quantidade, int situacao, int chave, int opcional);
+
+b_TipoApontador montarArvoreBFromArquivo(int quantidade, FILE *arquivo);
+
+void b_PesquisaComTimer(int chave, b_TipoApontador arvore);
 
 #endif
