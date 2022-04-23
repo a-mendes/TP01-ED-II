@@ -1,10 +1,11 @@
 #include "extra.h"
-#include "../sequencial.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
-// imprime os registros 
+#include "../sequencial.h"
+
+// imprime os registros
 void printaRegistros(int tamanho, FILE *arquivo) {
     TRegistro *registro = malloc(ITENSPAGINA * sizeof(TRegistro));
 

@@ -23,11 +23,8 @@ void exemploUsoGeradorArquivo() {
         printf("%s\n", registros[i].dado2);
     }
 }
-// argumentos == ./TP1.exe pesquisa (Método) (Quantidade de registros) (Situação) (Chave) (Opcional)
 
-// Exemplo de uso:
-// ./TP1.exe pesquisa 1 600 1 325 1 - (Busca a chave 325 e imprime todos registros )
-// ./TP1.exe pesquisa 2 600 1 - (imprime 20 registros procurados)
+// argumentos == ./TP1.exe pesquisa (Método) (Quantidade de registros) (Situação) (Chave) (Opcional)
 
 int main(int argc, char const *argv[]) {
     printf("TP1 - Estrutura de Dados II\n");
@@ -91,9 +88,10 @@ int main(int argc, char const *argv[]) {
                     sequencial(quantidade, situacao, chave, opcional);
                     printf("==============================================\n");
                 }
-            };
+            }
             break;
         case 2:  // árvore binaria
+            printf("### Pesquisa Binaria ###\n");
             // binaria();
             break;
         case 3:  // árvore B
@@ -105,6 +103,8 @@ int main(int argc, char const *argv[]) {
 
             break;
         case 4:  // árvore B estrela
+            printf("### Arvore B* ###\n");
+
             // b_estrela();
             break;
         default:  // opção inválida

@@ -1,93 +1,86 @@
 #include "b_estrela.h"
 
-void Pesquisa(TRegistro *x, TipoApontadorEstrela *Ap) {
-    int i;
-    TipoApontadorEstrela Pag;
-    Pag = *Ap;
+void Inicializa(ApontadorEstrela *Arvore) {
+    *Arvore = NULL;
+}
 
-    if ((*Ap)->Pt == Interna) {
+void Pesquisa(TRegistro *registro, ApontadorEstrela *Ap) {
+    // pesquisa pelo item desejado - aponta para saber se é interno ou externo
+    int i;
+    ApontadorEstrela pagina;
+    pagina = *Ap;
+
+    if ((*Ap)->NosOuFolha == Interna) {
         i = 1;
 
-        while (i < Pag->UU.U0.ni && x->chave > Pag->UU.U0.ri[i - 1]) i++;
+        while (i < pagina->ESTRUTURA.NOS.numeroChaves && registro->chave > pagina->ESTRUTURA.NOS.chave[i - 1]) i++;
 
-        if (x->chave < Pag->UU.U0.ri[i - 1])
-            Pesquisa(x, &Pag->UU.U0.pi[i - 1]);
+        if (registro->chave < pagina->ESTRUTURA.NOS.chave[i - 1])
+            Pesquisa(registro, &pagina->ESTRUTURA.NOS.ponteiroTree[i - 1]);
         else
-            Pesquisa(x, &Pag->UU.U0.pi[i]);
+            Pesquisa(registro, &pagina->ESTRUTURA.NOS.ponteiroTree[i]);
 
         return;
     }
 
     i = 1;
-    while (i < Pag->UU.U1.ne && x->chave > Pag->UU.U1.re[i - 1].chave) i++;
+    while (i < pagina->ESTRUTURA.FOLHAS.numeroRegistros && registro->chave > pagina->ESTRUTURA.FOLHAS.registro[i - 1].chave) i++;
 
-    if (x->chave == Pag->UU.U1.re[i - 1].chave)
-        *x = Pag->UU.U1.re[i - 1];
+    if (registro->chave == pagina->ESTRUTURA.FOLHAS.registro[i - 1].chave)
+        *registro = pagina->ESTRUTURA.FOLHAS.registro[i - 1];
     else
         printf("TipoRegistro nao esta presente na arvore\n");
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+void InsereNaPagina(ApontadorEstrela Ap, TRegistro registro, ApontadorEstrela ApDir) {
+    short NaoAchouPosicao;
+    int k;
 
-void b_Inicializa(TipoApontadorEstrela Arvore) {
-    Arvore = NULL;
-}
+    if (Ap->NosOuFolha == Interna) {
+        k = Ap->ESTRUTURA.NOS.numeroChaves;
+        NaoAchouPosicao = (k > 0);
 
-void b_Pesquisa(TRegistro *x, TipoApontadorEstrela Ap) {
-    if (Ap == NULL) {
-        printf("TipoRegistro nao esta presente na arvore");
-    }
+        while (NaoAchouPosicao) {
+            if (registro.chave >= Ap->ESTRUTURA.NOS.chave[k - 1]) {
+                NaoAchouPosicao = 0;
+                break;
+            }
+            Ap->ESTRUTURA.NOS.chave[k] = Ap->ESTRUTURA.NOS.chave[k - 1];
+            Ap->ESTRUTURA.NOS.ponteiroTree[k + 1] = Ap->ESTRUTURA.NOS.ponteiroTree[k];
+            k--;
+            if (k < 1)
+                NaoAchouPosicao = 0;
+        }
 
-    long i = 1;
-
-    while (i < Ap->n && x->Chave > Ap->r[i - 1].Chave)
-        i++;
-
-    if (x->Chave == Ap->r[i - 1].Chave) {
-        *x = Ap->r[i - 1];
+        Ap->ESTRUTURA.NOS.chave[k] = registro;
+        Ap->ESTRUTURA.NOS.ponteiroTree[k + 1] = ApDir;
+        Ap->ESTRUTURA.NOS.numeroChaves++;
         return;
     }
 
-    if (x->Chave < Ap->r[i - 1].Chave) {
-        b_Pesquisa(x, Ap->p[i - 1]);
-    } else {
-        b_Pesquisa(x, Ap->p[i - 1]);
-    }
-}
-
-void b_Imprime(TipoApontadorEstrela arvore) {
-    int i = 0;
-    if (arvore == NULL) return;
-    while (i <= arvore->n) {
-        b_Imprime(arvore->p[i]);
-
-        b_Imprime(arvore->p[i]);
-        if (i != arvore->n)
-            printf("%d", arvore->r[i].Chave);
-        i++;
-    }
-}
-
-void b_InsereNaPagina(TipoApontadorEstrela Ap, TRegistro Reg, TipoApontadorEstrela ApDir) {
-    short NaoAchouPosicao;
-    int k;
-    k = Ap->n;
+    k = Ap->ESTRUTURA.FOLHAS.numeroRegistros;
     NaoAchouPosicao = (k > 0);
+
     while (NaoAchouPosicao) {
-        if (Reg.Chave >= Ap->r[k - 1].Chave) {
+        if (registro.chave >= Ap->ESTRUTURA.FOLHAS.registro[k - 1].chave) {
             NaoAchouPosicao = 0;
             break;
         }
-        Ap->r[k] = Ap->r[k - 1];
-        Ap->p[k + 1] = Ap->p[k];
+
+        Ap->UU.U1.re[k] = Ap->UU.U1.re[k - 1];
+        k--;
+        if (k < 1)
+            NaoAchouPosicao = 0;
     }
+    Ap->UU.U1.re[k] = Reg;
+    Ap->UU.U1.ne++;
 }
 
-void b_Ins(TRegistro Reg, TipoApontadorEstrela Ap, short *Cresceu,
-           TRegistro *RegRetorno, TipoApontadorEstrela *ApRetorno) {
+void b_Ins(TRegistro Reg, ApontadorEstrela Ap, short *Cresceu,
+           TRegistro *RegRetorno, ApontadorEstrela *ApRetorno) {
     long i = 1;
     long j;
-    TipoApontadorEstrela ApTemp;
+    ApontadorEstrela ApTemp;
     if (Ap == NULL) {
         *Cresceu = 1;
         (*RegRetorno) = Reg;
@@ -117,7 +110,7 @@ void b_Ins(TRegistro Reg, TipoApontadorEstrela Ap, short *Cresceu,
         *Cresceu = 0;
     }
 
-    ApTemp = (TipoApontadorEstrela)malloc(sizeof(b_TipoPagina));
+    ApTemp = (ApontadorEstrela)malloc(sizeof(b_TipoPagina));
     ApTemp->n = 0;
     ApTemp->p[0] = NULL;
 
@@ -139,7 +132,7 @@ void b_Ins(TRegistro Reg, TipoApontadorEstrela Ap, short *Cresceu,
     *ApRetorno = ApTemp;
 }
 
-void b_Insere(TRegistro Reg, TipoApontadorEstrela *Ap) {
+void b_Insere(TRegistro Reg, ApontadorEstrela *Ap) {
     short Cresceu;
     TRegistro RegRetorno;
     b_TipoPagina *ApRetorno, *ApTemp;
