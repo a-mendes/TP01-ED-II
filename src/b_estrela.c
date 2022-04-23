@@ -1,8 +1,8 @@
 #include "b_estrela.h"
 
-void Pesquisa(TRegistro *x, TipoApontador *Ap) {
+void Pesquisa(TRegistro *x, TipoApontadorEstrela *Ap) {
     int i;
-    TipoApontador Pag;
+    TipoApontadorEstrela Pag;
     Pag = *Ap;
 
     if ((*Ap)->Pt == Interna) {
