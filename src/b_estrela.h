@@ -1,34 +1,37 @@
 #ifndef b_estrela_h
 #define b_estrela_h
 
-#include "extra/gerador_arquivo.h"
 #include "extra/extra.h"
+#include "extra/gerador_arquivo.h"
 
-#define TAM_STRING 5000  
-#define ME 2  // Ordem da árvore -- número mínimo de itens por página (exceto raiz)
+#define TAM_STRING 5000
+#define ORDEM 2  // Ordem da árvore -- número mínimo de itens por página (exceto raiz)
 
-//definir cabeçalho de função para pesquisa em arvore b_estrela
-typedef long TipoChave;
+// definir cabeçalho de função para pesquisa em arvore b_estrela
+typedef long Chave;
 
-typedef enum {Interna, Externa} TipoIntExt;
+typedef enum { Interna,
+               Externa } TipoIntExt;
 
-typedef struct TipoPagina* TipoApontadorEstrela;
+typedef struct TipoPagina *ApontadorEstrela;
 
 typedef struct TipoPagina {
-    TipoIntExt Pt;
+    TipoIntExt NosOuFolha; // onde interno == Nó e Externo == Folha
     union {
         struct {
-            int ni;
-            TipoChave ri[ME * 2]; // dois M posições
-            TipoApontadorEstrela pi[ME * 2 + 1]; // dois M + 1 Descendentes
-        } U0;
+            int numeroChaves;
+            Chave chave[ORDEM * 2];                          // dois M posições
+            ApontadorEstrela ponteiroTree[ORDEM * 2 + 1];  // dois M + 1 Descendentes
+        } NOS;
         struct {
-            int ne;
-            TRegistro re[ME * 2]; // 
-        } U1;
-    } UU;
+            int numeroRegistros;
+            TRegistro registro[ORDEM * 2];  //
+        } FOLHAS;
+    } ESTRUTURA;
 } TipoPagina;
 
-void Pesquisa(TRegistro *x, TipoApontadorEstrela *Ap);
+void Pesquisa(TRegistro *registro, ApontadorEstrela *Ap);
+
+void Inicializa(ApontadorEstrela *Arvore);
 
 #endif

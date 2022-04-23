@@ -22,21 +22,18 @@ void exemploUsoGeradorArquivo() {
         printf("%s\n", registros[i].dado2);
     }
 }
-// argumentos == ./TP1.exe pesquisa (Método) (Quantidade de registros) (Situação) (Chave) (Opcional)
 
-// Exemplo de uso:
-// ./TP1.exe pesquisa 1 600 1 325 1 - (Busca a chave 325 e imprime todos registros )
-// ./TP1.exe pesquisa 2 600 1 - (imprime 20 registros procurados)
+// argumentos == ./TP1.exe pesquisa (Método) (Quantidade de registros) (Situação) (Chave) (Opcional)
 
 int main(int argc, char const *argv[]) {
     printf("TP1 - Estrutura de Dados II\n");
 
-    char pesquisa[8];                // chamada do método
+    char pesquisa[8];  // chamada do método
     // strcpy(pesquisa, argv[1]);       // copia o método de pesquisa
-
-    int metodo = -1; //= atoi(argv[2]);      // metodo de pesquisa a ser executado (1 - sequencial, 2 - binaria, 3 - B, 4 - B estrela)
-    int quantidade = -1; //= atoi(argv[3]);  // quantidade de registros do arquivo (100, 200, 2k, 20k, 200k, 2kk)
-    int situacao = 1; //= atoi(argv[4]);    // situação de ordem do arquivo (1 - Crescente, 2 - Decrescente, 3 - Desordenado)
+    
+    int metodo = -1;      //= atoi(argv[2]);      // metodo de pesquisa a ser executado (1 - sequencial, 2 - binaria, 3 - B, 4 - B estrela)
+    int quantidade = -1;  //= atoi(argv[3]);  // quantidade de registros do arquivo (100, 200, 2k, 20k, 200k, 2kk)
+    int situacao = 1;     //= atoi(argv[4]);    // situação de ordem do arquivo (1 - Crescente, 2 - Decrescente, 3 - Desordenado)
     int chave = -1;
     int opcional = 0;
 
@@ -47,28 +44,27 @@ int main(int argc, char const *argv[]) {
     //         opcional = atoi(argv[6]);
     // }
 
-    if(argv[1] != NULL) {
+    if (argv[1] != NULL) {
         strcpy(pesquisa, argv[1]);
-        
-        if(argv[2] != NULL) {
+
+        if (argv[2] != NULL) {
             metodo = atoi(argv[2]);
 
-            if(argv[3] != NULL) {
+            if (argv[3] != NULL) {
                 quantidade = atoi(argv[3]);
-                
-                if(argv[4] != NULL) {
-                    situacao = atoi(argv[4]);
-                                    
-                    if(argv[5] != NULL) {
-                        chave = atoi(argv[5]);  
 
-                        if(argv[6] != NULL) {
-                            opcional = atoi(argv[6]);  
-                
+                if (argv[4] != NULL) {
+                    situacao = atoi(argv[4]);
+
+                    if (argv[5] != NULL) {
+                        chave = atoi(argv[5]);
+
+                        if (argv[6] != NULL) {
+                            opcional = atoi(argv[6]);
                         }
-                    } 
-                } 
-            }   
+                    }
+                }
+            }
         }
     }
 
@@ -76,13 +72,10 @@ int main(int argc, char const *argv[]) {
     switch (metodo) {
         case 1:  // acesso sequencial
             printf("### Pesquisa sequencial ###\n");
-        
-            if (!strcmp(pesquisa, "pesquisa") && chave != -1) {
 
+            if (!strcmp(pesquisa, "pesquisa") && chave != -1) {
                 sequencial(quantidade, situacao, chave, opcional);
-            } 
-            else if(!strcmp(pesquisa, "pesquisa") && quantidade > 0) {
-         
+            } else if (!strcmp(pesquisa, "pesquisa") && quantidade > 0) {
                 for (int i = 0; i < 20; i++) {
                     printf("Pesquisa de numero %d\n", i + 1);
 
@@ -93,15 +86,19 @@ int main(int argc, char const *argv[]) {
                     printf("==============================================\n");
                 }
             }
-    ;
             break;
         case 2:  // árvore binaria
+            printf("### Pesquisa Binaria ###\n");
             // binaria();
             break;
         case 3:  // árvore B
+            printf("### Arvore B ###\n");
+
             // b();
             break;
         case 4:  // árvore B estrela
+            printf("### Arvore B* ###\n");
+
             // b_estrela();
             break;
         default:  // opção inválida

@@ -118,12 +118,12 @@ int pesquisa(Indice *tabela, int tamanho, int quantidade, TRegistro *item, FILE 
     while (left <= right) {
         int mid = (left + right) / 2;
         if (pagina[mid].chave == item->chave) {
-            *item = pagina[mid];
-            
+            *item = pagina[mid];  // retorna o item encontrado
+
             endPesquisa = clock();                                                 // finaliza o cronômetro
             time = ((double)(endPesquisa - startPesquisa)) / CLOCKS_PER_SEC;       // calcula o tempo de execução
             printf("Tempo de execucao (busca sequencial indexada): %lf\n", time);  // imprime o tempo de execução
-            
+
             return 1;
         } else if (pagina[mid].chave < item->chave) {
             left = mid + 1;
