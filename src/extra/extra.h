@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define ITENSPAGINA 10000
+#define ITENSPAGINA 20
 
 typedef struct {
 	int chave;

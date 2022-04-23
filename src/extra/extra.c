@@ -1,5 +1,5 @@
 #include "extra.h"
-#include "sequencial.h"
+#include "../sequencial.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,19 +24,4 @@ void printaRegistros(int tamanho, FILE *arquivo) {
     free(registro);
 }
 
-// sistema de paginação
-TRegistro** sistemaPagina(int tamanho, FILE *arquivo) {
-    TRegistro paginacao[20][ITENSPAGINA];
-
-    for(int i = 0; i < 20; i++) {
-        fread(paginacao[i], sizeof(TRegistro), ITENSPAGINA, arquivo); 
-    }
-
-    return paginacao;
-
-    //ler a quantidade maxima e armazer na memoria principal
-    // fread pra buscar um elemento na memoria secundaria
-        // 1ª verificar no sistema de paginação
-        // se tiver - busca lá 
-        // se não - solicitar - ler da mem. principal 
-}
+// SITSTEMA DE PAGINAÇÂO IMPLEMENTAR ????

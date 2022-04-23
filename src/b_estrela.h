@@ -1,7 +1,8 @@
-/* #ifndef b_estrela_h
+#ifndef b_estrela_h
 #define b_estrela_h
 
-#include "gerador_arquivo.h"
+#include "extra/gerador_arquivo.h"
+#include "extra/extra.h"
 
 #define TAM_STRING 5000  
 #define M 2  // Ordem da árvore -- número mínimo de itens por página (exceto raiz)
@@ -11,7 +12,7 @@ typedef long TipoChave;
 
 typedef enum {Interna, Externa} TipoIntExt;
 
-typedef struct TipoPagina* TipoApontador;
+typedef struct TipoPagina* TipoApontadorEstrela;
 
 typedef struct TipoPagina {
     TipoIntExt Pt;
@@ -28,10 +29,6 @@ typedef struct TipoPagina {
     } UU;
 } TipoPagina;
 
-void Pesquisa(TRegistro *x, TipoApontador *Ap);
-
-
-
+void Pesquisa(TRegistro *x, TipoApontadorEstrela *Ap);
 
 #endif
- */
