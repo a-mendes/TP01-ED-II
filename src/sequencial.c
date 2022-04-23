@@ -2,10 +2,10 @@
 
 // Pré-processamento dos dados
 int sequencial(int quantidade, int situacao, int chave) {
-    Indice *tabela;              // tabela de índices
-    TRegistro aux[ITENSPAGINA];  // item auxiliar para leitura de registros
-    TRegistro item;              // chave de busca
-    double tamanho;              // tamanho da tabela de índices
+    Indice *tabela;  // tabela de índices
+    TRegistro *aux;  // item auxiliar para leitura de registros
+    TRegistro item;  // chave de busca
+    double tamanho;  // tamanho da tabela de índices
 
     // Gera o arquivo com a quantidade de registros informada
     char *registros = gerarArquivoAscendente(quantidade);
@@ -20,12 +20,13 @@ int sequencial(int quantidade, int situacao, int chave) {
         tamanho = quantidade / ITENSPAGINA + 1;
     }
 
-    // Aloca a tabela de índices
+    // Aloca a tabela de índices e o auxiliar
     tabela = (Indice *)malloc(tamanho * sizeof(Indice));
+    aux = (TRegistro *)malloc(ITENSPAGINA * sizeof(TRegistro));
 
-    for (int i = 0; i < tamanho; i++) {                        // percorre todas as páginas
-        fread(&aux, sizeof(TRegistro), ITENSPAGINA, arquivo);  // lê 20 registros por acesso (1 página)
-        tabela[i].chave = aux[0].chave;                        // salva a chave do primeiro registro na tabela de indices
+    for (int i = 0; i < tamanho; i++) {                       // percorre todas as páginas
+        fread(aux, sizeof(TRegistro), ITENSPAGINA, arquivo);  // lê 20 registros por acesso (1 página)
+        tabela[i].chave = aux[0].chave;                       // salva a chave do primeiro registro na tabela de indices
     }
 
     fseek(arquivo, 0, SEEK_SET);  // retorna o ponteiro para o início do arquivo
@@ -45,6 +46,8 @@ int sequencial(int quantidade, int situacao, int chave) {
     }
 
     free(tabela);     // libera a tabela de índices
+    free(aux);        // libera o auxiliar
+    
     fclose(arquivo);  // fecha o arquivo de registros
 
     return 0;
@@ -79,14 +82,14 @@ int pesquisa(Indice *tabela, int tamanho, int quantidade, TRegistro *item, FILE 
     }
 
     // aloca a página de registros onde contém o item
-    pagina = (TRegistro *)malloc(qntRegistros * sizeof(TRegistro));
+    pagina = malloc(qntRegistros * sizeof(TRegistro));
 
     // calcula a posição do ponteiro no arquivo
     position = (contador - 1) * ITENSPAGINA * sizeof(TRegistro);
     fseek(arquivo, position, SEEK_SET);  // posiciona o ponteiro no arquivo
 
     // lê os registros da página onde contém o item
-    fread(&pagina, sizeof(TRegistro), qntRegistros, arquivo);
+    fread(pagina, sizeof(TRegistro), qntRegistros, arquivo);
 
     // Utiliza da busca binária para encontrar o item procurado
     int left = 0;

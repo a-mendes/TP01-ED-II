@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "b.h"
 #include "b_estrela.h"
@@ -25,34 +26,34 @@ void exemploUsoGeradorArquivo() {
 
 int main(int argc, char const *argv[]) {
     printf("TP1 - Estrutura de Dados II\n");
+    // fazer uma lista com cada registro [20] existentes em um file pré definido
 
-    int metodo = atoi(argv[1]);      // metodo de pesquisa a ser executado (1 - sequencial, 2 - binaria, 3 - B, 4 - B estrela)
-    int quantidade = atoi(argv[2]);  // Quantidade de registros do arquivo (100, 200, 2k, 20k, 200k, 2kk)
-    int situacao = atoi(argv[3]);    // situação de ordem do arquivo (1 - Crescente, 2 - Decrescente, 3 - Desordenado)
-    int modo = atoi(argv[4]);        // modo de execução (1- automático ou 2- manual)
-    int chave = atoi(argv[5]);       // chave a ser pesquisada no arquivo
+    char pesquisa[8];                // chamada do método
+    strcpy(pesquisa, argv[1]);       // copia o método de pesquisa
 
-    // exemploUsoGeradorArquivo();
+    int metodo = atoi(argv[2]);      // metodo de pesquisa a ser executado (1 - sequencial, 2 - binaria, 3 - B, 4 - B estrela)
+    int quantidade = atoi(argv[3]);  // Quantidade de registros do arquivo (100, 200, 2k, 20k, 200k, 2kk)
+    int situacao = atoi(argv[4]);    // situação de ordem do arquivo (1 - Crescente, 2 - Decrescente, 3 - Desordenado)
+    int chave = atoi(argv[5]);       // chave a ser pesquisada no arquivo 
 
     // Implementar menu de acesso às pesquisas
     switch (metodo) {
         case 1:  // acesso sequencial
             printf("### Pesquisa sequencial ###\n");
 
-            if (modo == 1) {
+            if (strcmp(pesquisa, "pesquisa") == 0) {
                 sequencial(quantidade, situacao, chave);
-            } else if (modo == 2) {
+            } else {
                 for (int i = 0; i < 20; i++) {
                     printf("Pesquisa de numero %d\n", i + 1);
 
-                    int chaveAuto = rand() % 1000;
-                    printf("Chave: %d\n", chaveAuto);
+                    chave = rand() % 1000;
+                    printf("Chave: %d\n", chave);
 
-                    sequencial(quantidade, situacao, chaveAuto);
+                    sequencial(quantidade, situacao, chave);
                     printf("===============================\n");
                 }
-            } else
-                printf("Modo de execução inválido\n");
+            }
 
             break;
         case 2:  // árvore binaria
