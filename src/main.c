@@ -99,7 +99,22 @@ int main(int argc, char const *argv[]) {
             // binaria();
             break;
         case 3:  // árvore B
-            // b();
+            printf("### Pesquisa arvore B ###\n");
+
+            if (!strcmp(pesquisa, "pesquisa") && chave != -1) {
+                b(quantidade, situacao, chave, opcional);
+            } else if (!strcmp(pesquisa, "pesquisa") && quantidade > 0) {
+                for (int i = 0; i < 20; i++) {
+                    printf("Pesquisa de numero %d\n", i + 1);
+
+                    chave = rand() % 1000;
+                    printf("Chave: %d\n", chave);
+
+                    b(quantidade, situacao, chave, opcional);
+                    printf("==============================================\n");
+                }
+            }
+
             break;
         case 4:  // árvore B estrela
             // b_estrela();

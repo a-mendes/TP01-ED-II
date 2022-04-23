@@ -2,27 +2,79 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
-void b_Inicializa(b_TipoApontador Arvore) {
-    Arvore = NULL;
+#include "extra/extra.h"
+#include "extra/gerador_arquivo.h"
+
+int b(int quantidade, int situacao, int chave, int opcional) {
+    // variáveis para medir o tempo de execução
+    clock_t startIndice, endIndice;
+    double time;
+
+    // Gera o arquivo com a quantidade de registros informada
+    char *registros = gerarArquivoOrdenado(quantidade, situacao);
+
+    // Abre o arquivo de registros
+    FILE *arquivo = fopen(registros, "rb");
+
+    // Imprime os registros
+    if (opcional)
+        printaRegistros(quantidade, arquivo);
+
+    startIndice = clock();  // inicia a contagem do tempo
+
+    b_TipoApontador tipo;
+    b_Inicializa(&tipo);
+    TRegistro reg;
+    reg.chave = 10;
+    reg.dado1 = 1;
+    strcpy(reg.dado2, "jair\0");
+    b_Insere(reg, &tipo);
+
+    reg.chave = 30;
+    reg.dado1 = 4000;
+    strcpy(reg.dado2, "zap");
+    b_Insere(reg, &tipo);
+    b_Imprime(tipo);
+
+    reg.chave = 30;
+    b_Pesquisa(&reg, tipo);
+    printf("%lld %s ", reg.dado1, reg.dado2);
+
+    printf("\n");
+    endIndice = clock();                                            // finaliza o cronômetro
+    time = ((double)(endIndice - startIndice)) / CLOCKS_PER_SEC;    // calcula o tempo de execução
+    printf("Tempo de execucao (criacao de indices): %lf\n", time);  // imprime o tempo de execução
+
+    rewind(arquivo);  // retorna o ponteiro para o início do arquivo
+
+    fclose(arquivo);  // fecha o arquivo de registros
+
+    return 0;
 }
 
-void b_Pesquisa(b_TipoRegistro *x, b_TipoApontador Ap) {
+void b_Inicializa(b_TipoApontador *Arvore) {
+    (*Arvore) = NULL;
+}
+
+void b_Pesquisa(TRegistro *x, b_TipoApontador Ap) {
     if (Ap == NULL) {
         printf("TipoRegistro nao esta presente na arvore");
     }
 
     long i = 1;
 
-    while (i < Ap->n && x->Chave > Ap->r[i - 1].Chave)
+    while (i < Ap->n && x->chave > Ap->r[i - 1].chave)
         i++;
 
-    if (x->Chave == Ap->r[i - 1].Chave) {
+    if (x->chave == Ap->r[i - 1].chave) {
         *x = Ap->r[i - 1];
         return;
     }
 
-    if (x->Chave < Ap->r[i - 1].Chave) {
+    if (x->chave < Ap->r[i - 1].chave) {
         b_Pesquisa(x, Ap->p[i - 1]);
     } else {
         b_Pesquisa(x, Ap->p[i - 1]);
@@ -35,32 +87,32 @@ void b_Imprime(b_TipoApontador arvore) {
     while (i <= arvore->n) {
         b_Imprime(arvore->p[i]);
 
-        b_Imprime(arvore->p[i]);
         if (i != arvore->n)
-            printf("%d", arvore->r[i].Chave);
+            printf("%d ", arvore->r[i].chave);
         i++;
     }
 }
 
-void b_InsereNaPagina(b_TipoApontador Ap, b_TipoRegistro Reg, b_TipoApontador ApDir) {
-    short NaoAchouPosicao;
-    int k;
-    k = Ap->n;
-    NaoAchouPosicao = (k > 0);
-    while (NaoAchouPosicao) {
-        if (Reg.Chave >= Ap->r[k - 1].Chave) {
-            NaoAchouPosicao = 0;
-            break;
-        }
-        Ap->r[k] = Ap->r[k - 1];
-        Ap->p[k + 1] = Ap->p[k];
+void b_Insere(TRegistro Reg, b_TipoApontador *Ap) {
+    short Cresceu;
+    TRegistro RegRetorno;
+    b_TipoPagina *ApRetorno, *ApTemp;
+
+    b_Ins(Reg, *Ap, &Cresceu, &RegRetorno, &ApRetorno);
+
+    if (Cresceu) {
+        ApTemp = (b_TipoPagina *)malloc(sizeof(b_TipoPagina));
+        ApTemp->n = 1;
+        ApTemp->r[0] = RegRetorno;
+        ApTemp->p[1] = ApRetorno;
+        ApTemp->p[0] = *Ap;
+        *Ap = ApTemp;
     }
 }
 
-void b_Ins(b_TipoRegistro Reg, b_TipoApontador Ap, short *Cresceu,
-           b_TipoRegistro *RegRetorno, b_TipoApontador *ApRetorno) {
-    long i = 1;
-    long j;
+void b_Ins(TRegistro Reg, b_TipoApontador Ap, short *Cresceu,
+           TRegistro *RegRetorno, b_TipoApontador *ApRetorno) {
+    long i = 1, j;
     b_TipoApontador ApTemp;
     if (Ap == NULL) {
         *Cresceu = 1;
@@ -69,18 +121,20 @@ void b_Ins(b_TipoRegistro Reg, b_TipoApontador Ap, short *Cresceu,
         return;
     }
 
-    while (i < Ap->n && Reg.Chave > Ap->r[i - 1].Chave)
+    while (i < Ap->n && Reg.chave > Ap->r[i - 1].chave)
         i++;
 
-    if (Reg.Chave == Ap->r[i - 1].Chave) {
+    if (Reg.chave == Ap->r[i - 1].chave) {
         printf("Erro: registro ja esta presente\n");
         *Cresceu = 0;
         return;
     }
 
-    if (Reg.Chave < Ap->r[i - 1].Chave) {
+    if (Reg.chave < Ap->r[i - 1].chave) {
         i--;
     }
+
+    b_Ins(Reg, Ap->p[i], Cresceu, RegRetorno, ApRetorno);
 
     if (!(*Cresceu)) {
         return;
@@ -89,6 +143,7 @@ void b_Ins(b_TipoRegistro Reg, b_TipoApontador Ap, short *Cresceu,
     if (Ap->n < MM) {
         b_InsereNaPagina(Ap, *RegRetorno, *ApRetorno);
         *Cresceu = 0;
+        return;
     }
 
     ApTemp = (b_TipoApontador)malloc(sizeof(b_TipoPagina));
@@ -113,21 +168,26 @@ void b_Ins(b_TipoRegistro Reg, b_TipoApontador Ap, short *Cresceu,
     *ApRetorno = ApTemp;
 }
 
-void b_Insere(b_TipoRegistro Reg, b_TipoApontador *Ap) {
-    short Cresceu;
-    b_TipoRegistro RegRetorno;
-    b_TipoPagina *ApRetorno, *ApTemp;
-
-    b_Ins(Reg, *Ap, &Cresceu, &RegRetorno, &ApRetorno);
-
-    if (Cresceu) {
-        ApTemp = (b_TipoPagina *)malloc(sizeof(b_TipoPagina));
-        ApTemp->n = 1;
-        ApTemp->r[0] = RegRetorno;
-        ApTemp->p[1] = ApRetorno;
-        ApTemp->p[0] = *Ap;
-        *Ap = ApTemp;
+void b_InsereNaPagina(b_TipoApontador Ap, TRegistro Reg, b_TipoApontador ApDir) {
+    short NaoAchouPosicao;
+    int k;
+    k = Ap->n;
+    NaoAchouPosicao = (k > 0);
+    while (NaoAchouPosicao) {
+        if (Reg.chave >= Ap->r[k - 1].chave) {
+            NaoAchouPosicao = 0;
+            break;
+        }
+        Ap->r[k] = Ap->r[k - 1];
+        Ap->p[k + 1] = Ap->p[k];
+        k--;
+        if (k < 1) {
+            NaoAchouPosicao = 0;
+        }
     }
+    Ap->r[k] = Reg;
+    Ap->p[k + 1] = ApDir;
+    Ap->n++;
 }
 
 void b_Reconstitui(b_TipoApontador ApPag, b_TipoApontador ApPai,
@@ -223,10 +283,10 @@ void b_Ret(b_TipoChave Ch, b_TipoApontador *Ap, short *Diminuiu) {
         return;
     }
     Pag = *Ap;
-    while (Ind < Pag->n && Ch > Pag->r[Ind - 1].Chave) {
+    while (Ind < Pag->n && Ch > Pag->r[Ind - 1].chave) {
         Ind++;
     }
-    if (Ch == Pag->r[Ind - 1].Chave) {
+    if (Ch == Pag->r[Ind - 1].chave) {
         if (Pag->p[Ind - 1] == NULL) {
             Pag->n--;
             *Diminuiu = (Pag->n < M);
@@ -243,7 +303,7 @@ void b_Ret(b_TipoChave Ch, b_TipoApontador *Ap, short *Diminuiu) {
         }
         return;
     }
-    if (Ch > Pag->r[Ind - 1].Chave) {
+    if (Ch > Pag->r[Ind - 1].chave) {
         Ind++;
     }
     b_Ret(Ch, &Pag->p[Ind - 1], Diminuiu);
