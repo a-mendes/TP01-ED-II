@@ -1,12 +1,6 @@
 #ifndef gerador_arquivo_h
 #define gerador_arquivo_h
 
-typedef struct {
-	int chave;
-	long long dado1;
-	char dado2[30]; 
-} TRegistro;
-
 // 1
 char* gerarArquivoAscendente(int numeroRegistros);
 

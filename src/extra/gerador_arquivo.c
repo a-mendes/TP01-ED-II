@@ -1,4 +1,5 @@
 #include "gerador_arquivo.h"
+#include "extra.h"
 
 #include <stdio.h>
 #include <stdlib.h>

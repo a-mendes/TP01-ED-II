@@ -5,10 +5,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "gerador_arquivo.h"
-// definir cabeçalho de função para pesquisa sequencial
-
-#define ITENSPAGINA 20
+#include "extra/gerador_arquivo.h"
+#include "extra/extra.h"
 
 // definição de uma entrada da tabela de índice das páginas
 typedef struct {
@@ -16,6 +14,6 @@ typedef struct {
 } Indice;
 
 int pesquisa(Indice *tabela, int tamanho, int quantidade, TRegistro *item, FILE *arquivo);
-int sequencial(int quantidade, int situacao, int chave);
+int sequencial(int quantidade, int situacao, int chave, int opcional);
 
 #endif
