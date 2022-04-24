@@ -1,6 +1,6 @@
 #Windows Makefile
 
-all: main.o gerador_arquivo.o extra.o sequencial.o binaria.o b.o b_estrela.o 
+all: main.o gerador_arquivo.o extra.o sequencial.o binaria.o b.o b_estrela.o
 	@gcc ./obj/main.o ./obj/gerador_arquivo.o ./obj/extra.o ./obj/sequencial.o ./obj/binaria.o ./obj/b.o ./obj/b_estrela.o -o TP1
 
 main.o: ./src/main.c
@@ -27,10 +27,12 @@ b_estrela.o: ./src/b_estrela.c
 run:
 	@./TP1.exe
 
-go: 
+go:
 	@make all
 	@make run
 
 clean:
-	@del *.exe obj data
+	@del *.exe /q
+	@cd data && del *.bin /q && \
+	@cd ../obj && del *.o /q && \
 	@cls
