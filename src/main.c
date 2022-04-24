@@ -105,7 +105,9 @@ int main(int argc, char const *argv[]) {
         case 4:  // árvore B estrela
             printf("### Arvore B* ###\n");
 
-            // b_estrela();
+            b_estrela(quantidade, chave, opcional);
+            // ./TP1.exe pesquisa (Método) (Quantidade de registros) (Situação) (Chave) (Opcional)
+
             break;
         default:  // opção inválida
             printf("Opcao invalida!\n");
