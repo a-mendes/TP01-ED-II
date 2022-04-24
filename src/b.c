@@ -9,22 +9,15 @@
 #include "extra/gerador_arquivo.h"
 
 int b(int quantidade, int situacao, int chave, int opcional) {
-    // variáveis para medir o tempo de execução
-    clock_t startIndice, endIndice;
-    double time;
-    // Gera o arquivo com a quantidade de registros informada
     char *registros = gerarArquivoOrdenado(quantidade, situacao);
-    // Abre o arquivo de registros
     FILE *arquivo = fopen(registros, "rb");
-
     // Imprime os registros
-    if (opcional)
+    if (opcional) {
+        printf("opcional");
         printaRegistros(quantidade, arquivo);
-
-    startIndice = clock();  // inicia a contagem do tempo
+    }
 
     b_TipoApontador arvore = montarArvoreBFromArquivo(quantidade, arquivo);
-
     fclose(arquivo);  // fecha o arquivo de registros
 
     if (chave != -1) {
@@ -35,7 +28,95 @@ int b(int quantidade, int situacao, int chave, int opcional) {
         }
     }
 
+    montarArquivoFromArvoreB(arvore);
+
     return 0;
+}
+
+void imprimirNodo(b_TipoApontador nodo) {
+    printf("N: %d, ", nodo->n);
+    printf("Chaves: ");
+    for (int i = 0; i < nodo->n; i++) {
+        printf("%d ", nodo->r[i].chave);
+    }
+    printf("\n");
+}
+
+b_Bloco criarBlocoArvore(b_TipoApontador arvore, int father_pointer) {
+    b_Bloco bloco;
+    bloco.n = arvore->n;
+    memcpy(&bloco.r, arvore->r, sizeof(arvore->r));
+    for (int i = 0; i < MM + 1; i++) {
+        bloco.p[i] = -1;
+    }
+
+    imprimirNodo(arvore);
+
+    return bloco;
+}
+
+void escreverNoArquivo(FILE *arquivo, b_TipoApontador arvore, int *current_pointer, int father_pointer) {
+    if (arvore == NULL) {
+        return;
+    }
+
+    (*current_pointer)++;
+    printf("Bloco %d | ", *current_pointer);
+
+    b_Bloco bloco = criarBlocoArvore(arvore, father_pointer);
+    // escreve o bloco na memoria
+    fseek(arquivo, (*current_pointer) * sizeof(b_Bloco), SEEK_SET);
+    fwrite(&bloco, sizeof(b_Bloco), 1, arquivo);
+
+    // coloca o current_pointer no lugar de um apontador vazio do pai
+    if (father_pointer != -1) {
+        fseek(arquivo, father_pointer * sizeof(b_Bloco), SEEK_SET);
+        fread(&bloco, sizeof(b_Bloco), 1, arquivo);
+
+        int i = 0;
+        while (bloco.p[i] != -1) i++;
+        bloco.p[i] = (*current_pointer);
+
+        fseek(arquivo, father_pointer * sizeof(b_Bloco), SEEK_SET);
+        fwrite(&bloco, sizeof(b_Bloco), 1, arquivo);
+    }
+
+    father_pointer = *current_pointer;
+
+    for (int i = 0; i < arvore->n + 1; i++) {
+        escreverNoArquivo(arquivo, arvore->p[i], current_pointer, father_pointer);
+    }
+}
+
+void imprimirArquivoArvoreB(FILE *arquivo) {
+    rewind(arquivo);
+    b_Bloco bloco;
+    int i = 0;
+    while (fread(&bloco, sizeof(b_Bloco), 1, arquivo)) {
+        printf("Bloco %d | ", i);
+        printf("N: %d, ", bloco.n);
+        printf("Chaves: ");
+        for (int i = 0; i < bloco.n; i++) {
+            printf("%d ", bloco.r[i].chave);
+        }
+
+        printf("Apontadores: ");
+        for (int i = 0; i < bloco.n + 1; i++) {
+            printf("%d ", bloco.p[i]);
+        }
+        printf("\n");
+        i++;
+    }
+}
+
+void montarArquivoFromArvoreB(b_TipoApontador arvore) {
+    FILE *arquivo = fopen("data/btree.dat", "wb+");
+
+    int count = -1;
+    escreverNoArquivo(arquivo, arvore, &count, -1);
+    imprimirArquivoArvoreB(arquivo);
+
+    fclose(arquivo);
 }
 
 void b_PesquisaComTimer(int chave, b_TipoApontador arvore) {
@@ -60,7 +141,7 @@ b_TipoApontador montarArvoreBFromArquivo(int quantidade, FILE *arquivo) {
 
     rewind(arquivo);
     TRegistro *registros = malloc(ITENSPAGINA * sizeof(TRegistro));
-    const int qntPag = quantidade / ITENSPAGINA;
+    const int qntPag = quantidade < ITENSPAGINA ? 1 : quantidade / ITENSPAGINA;
 
     for (int i = 0; i < qntPag; ++i) {
         fread(registros, sizeof(TRegistro), ITENSPAGINA, arquivo);

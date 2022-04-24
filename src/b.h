@@ -16,6 +16,12 @@ typedef struct b_TipoPagina {
     b_TipoApontador p[MM + 1];
 } b_TipoPagina;
 
+typedef struct b_Bloco {
+    short n;
+    TRegistro r[MM];
+    long p[MM + 1];
+} b_Bloco;
+
 // funções
 
 void b_Inicializa(b_TipoApontador *Arvore);
@@ -44,4 +50,7 @@ b_TipoApontador montarArvoreBFromArquivo(int quantidade, FILE *arquivo);
 
 void b_PesquisaComTimer(int chave, b_TipoApontador arvore);
 
+void escreverNoArquivo(FILE *arquivo, b_TipoApontador arvore, int *current_pointer, int father_pointer);
+
+void montarArquivoFromArvoreB(b_TipoApontador arvore);
 #endif
