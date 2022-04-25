@@ -13,29 +13,12 @@ void printaRegistros(int tamanho, FILE *arquivo) {
 
     printf("Registros\n");
 
-    int qntPag;
-
-    if (tamanho % ITENSPAGINA == 0) {
-        qntPag = tamanho / ITENSPAGINA;
-    } else {
-        qntPag = tamanho / ITENSPAGINA + 1;
-    }
+    int qntPag = tamanho / ITENSPAGINA;
 
     for (int i = 0; i < qntPag; ++i) {
         fread(registro, sizeof(TRegistro), ITENSPAGINA, arquivo);
-
-        if(qntPag == 1) {
-            for (int j = 0; j < tamanho; j++)
-                printf("%-5d", registro[j].chave);
-        }
-        else if(qntPag > 1 && i + 1 == qntPag) {
-            for (int j = 0; j < tamanho % ITENSPAGINA; j++)
-                printf("%-5d", registro[j].chave);   
-        }
-        else {
-            for (int j = 0; j < ITENSPAGINA; j++)
-                printf("%-5d", registro[j].chave);
-        }
+        for (int j = 0; j < ITENSPAGINA; j++)
+            printf("%-5d", registro[j].chave);
         printf("\n");
     }
 
