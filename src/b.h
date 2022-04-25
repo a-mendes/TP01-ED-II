@@ -48,9 +48,12 @@ int b(int quantidade, int situacao, int chave, int opcional);
 
 b_TipoApontador montarArvoreBFromArquivo(int quantidade, FILE *arquivo);
 
-void b_PesquisaComTimer(int chave, b_TipoApontador arvore);
+void b_PesquisaComTimer(int chave);
 
 void escreverNoArquivo(FILE *arquivo, b_TipoApontador arvore, int *current_pointer, int father_pointer);
 
 void montarArquivoFromArvoreB(b_TipoApontador arvore);
+
+int b_PesquisaArquivo(TRegistro *x, long current_line, FILE *arquivo);
+
 #endif

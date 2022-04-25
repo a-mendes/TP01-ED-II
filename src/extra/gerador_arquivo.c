@@ -1,180 +1,176 @@
 #include "gerador_arquivo.h"
-#include "extra.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
+#include "extra.h"
+
 /**
  *  arquivos contendo 100, 200, 2.000, 20.000, 200.000 e 2.000.000 registros
  * arquivos ordenados ascendentemente, descendentemente e aleatoriamente
-*/
+ */
 
-void montarNomeArquivo(char* nomeArquivo, int numeroRegistros, int situacao) {
-	/** Definindo nome do arquivo
-	 * 		"<pasta>/<tipo_de_ordenação>_<quantidade_de_registros>.dat"
-	 */ 
-	strcpy(nomeArquivo, "data/");
+void montarNomeArquivo(char *nomeArquivo, int numeroRegistros, int situacao) {
+    /** Definindo nome do arquivo
+     * 		"<pasta>/<tipo_de_ordenação>_<quantidade_de_registros>.dat"
+     */
+    strcpy(nomeArquivo, "data/");
 
-	static char numeroRegistrosString[10]; 
-	itoa(numeroRegistros, numeroRegistrosString, 10); //Converte int para string
+    static char numeroRegistrosString[10];
+    itoa(numeroRegistros, numeroRegistrosString, 10);  // Converte int para string
 
-	static char situacaoOrdenacao[15];
-	switch(situacao) {
-		case 1:
-			strcpy(situacaoOrdenacao, "ascendente_");
-			break;
-		case 2:
-			strcpy(situacaoOrdenacao, "descendente_");
-			break;
+    static char situacaoOrdenacao[15];
+    switch (situacao) {
+        case 1:
+            strcpy(situacaoOrdenacao, "ascendente_");
+            break;
+        case 2:
+            strcpy(situacaoOrdenacao, "descendente_");
+            break;
 
-		case 3:
-			strcpy(situacaoOrdenacao, "aleatorio_");
-			break;
-	}
-	
-	strcat(nomeArquivo, situacaoOrdenacao);
-	strcat(nomeArquivo, numeroRegistrosString);
-	strcat(nomeArquivo, ".dat");
+        case 3:
+            strcpy(situacaoOrdenacao, "aleatorio_");
+            break;
+    }
+
+    strcat(nomeArquivo, situacaoOrdenacao);
+    strcat(nomeArquivo, numeroRegistrosString);
+    strcat(nomeArquivo, ".dat");
 }
 
-//Usado para ordenar o arquivo
-void ShellSort(TRegistro* registros, int n, int tipoOrdenacao)
-{ 
- 	int h;
+// Usado para ordenar o arquivo
+void ShellSort(TRegistro *registros, int n, int tipoOrdenacao) {
+    int h;
 
-	for(h = 1; h < n; h = 3 * h + 1);//h inicial
+    for (h = 1; h < n; h = 3 * h + 1)
+        ;  // h inicial
 
-	do
-	{
-		h = (h - 1) / 3;
+    do {
+        h = (h - 1) / 3;
 
-		for(int i = h; i < n; i++)
-		{
-		  	TRegistro aux = registros[i];
-		  	int j = i;
+        for (int i = h; i < n; i++) {
+            TRegistro aux = registros[i];
+            int j = i;
 
-		  	//Ascendente
-		  	if(tipoOrdenacao == 1){
-		  		while(registros[j-h].chave > aux.chave)
-				{
-					registros[j] = registros[j-h];
+            // Ascendente
+            if (tipoOrdenacao == 1) {
+                while (registros[j - h].chave > aux.chave) {
+                    registros[j] = registros[j - h];
 
-					j = j - h;
+                    j = j - h;
 
-					if(j < h)
-				  		break;
-				}
-		  	}
+                    if (j < h)
+                        break;
+                }
+            }
 
-		  	//Descendente
-		  	else if(tipoOrdenacao == 2){
-		  		while(registros[j-h].chave < aux.chave)
-				{
-					registros[j] = registros[j-h];
+            // Descendente
+            else if (tipoOrdenacao == 2) {
+                while (registros[j - h].chave < aux.chave) {
+                    registros[j] = registros[j - h];
 
-					j = j - h;
+                    j = j - h;
 
-					if(j < h)
-				  		break;
-				}
-		  	}
-			
-			registros[j] = aux;
-		}
-	} while (h != 1);
+                    if (j < h)
+                        break;
+                }
+            }
+
+            registros[j] = aux;
+        }
+    } while (h != 1);
 }
 
-char* gerarArquivoOrdenado(int numeroRegistros, int tipoOrdenacao){
-	/** Verifica se já existe um arquivo aleatório para a quanidade de registros solicitada 
-	 * 		Se sim, ordenar o arquivo já existente
-	 * 		Se não, criar um arquivo aleatório e ordená-lo
-	 */ 
+char *gerarArquivoOrdenado(int numeroRegistros, int tipoOrdenacao) {
+    /** Verifica se já existe um arquivo aleatório para a quanidade de registros solicitada
+     * 		Se sim, ordenar o arquivo já existente
+     * 		Se não, criar um arquivo aleatório e ordená-lo
+     */
 
-	FILE *arquivoAleatorio;
-	char nomeArquivoAleatorio[40];
-	montarNomeArquivo(nomeArquivoAleatorio, numeroRegistros, 3);
+    FILE *arquivoAleatorio;
+    char nomeArquivoAleatorio[40];
+    montarNomeArquivo(nomeArquivoAleatorio, numeroRegistros, 3);
 
-	arquivoAleatorio = fopen(nomeArquivoAleatorio, "rb");
+    arquivoAleatorio = fopen(nomeArquivoAleatorio, "rb");
 
-	if (arquivoAleatorio == NULL) {
+    if (arquivoAleatorio == NULL) {
         gerarArquivoAleatorio(numeroRegistros);
         arquivoAleatorio = fopen(nomeArquivoAleatorio, "rb");
     }
 
-	TRegistro *registros = malloc(numeroRegistros * sizeof(TRegistro));
-    //TRegistro registros[numeroRegistros];
+    TRegistro *registros = malloc(numeroRegistros * sizeof(TRegistro));
+    // TRegistro registros[numeroRegistros];
 
-	fread(registros, sizeof(TRegistro), numeroRegistros, arquivoAleatorio);
+    fread(registros, sizeof(TRegistro), numeroRegistros, arquivoAleatorio);
     fclose(arquivoAleatorio);
 
-    //Ordena ascendentemente
+    // Ordena ascendentemente
     ShellSort(registros, numeroRegistros, tipoOrdenacao);
 
     static char nomeArquivo[40];
-	montarNomeArquivo(nomeArquivo, numeroRegistros, tipoOrdenacao);
+    montarNomeArquivo(nomeArquivo, numeroRegistros, tipoOrdenacao);
 
-	FILE *arquivo;
-	arquivo = fopen(nomeArquivo, "wb"); // Cria um arquivo binário para gravação
-    fwrite (registros, sizeof(TRegistro), numeroRegistros, arquivo);
+    FILE *arquivo;
+    arquivo = fopen(nomeArquivo, "wb");  // Cria um arquivo binário para gravação
+    fwrite(registros, sizeof(TRegistro), numeroRegistros, arquivo);
 
     fclose(arquivo);
-	free(registros);
+    free(registros);
 
-	return nomeArquivo;
+    return nomeArquivo;
 }
 
-char* gerarArquivoAscendente(int numeroRegistros) {
+char *gerarArquivoAscendente(int numeroRegistros) {
     char *nomeArquivo;
     nomeArquivo = gerarArquivoOrdenado(numeroRegistros, 1);
 
-	return nomeArquivo;
+    return nomeArquivo;
 }
 
-char* gerarArquivoDescendente(int numeroRegistros){
-	char *nomeArquivo;
-	nomeArquivo = gerarArquivoOrdenado(numeroRegistros, 2);
+char *gerarArquivoDescendente(int numeroRegistros) {
+    char *nomeArquivo;
+    nomeArquivo = gerarArquivoOrdenado(numeroRegistros, 2);
 
-	return nomeArquivo;
+    return nomeArquivo;
 }
 
-char* gerarArquivoAleatorio(int numeroRegistros) {
-	
-	static char nomeArquivo[40];
-	montarNomeArquivo(nomeArquivo, numeroRegistros, 3);
+char *gerarArquivoAleatorio(int numeroRegistros) {
+    static char nomeArquivo[40];
+    montarNomeArquivo(nomeArquivo, numeroRegistros, 3);
 
-	/** Criando Arquivo 
-	 * 		geração randomica de´números de 1 a 1000
-	 */
-	FILE *arquivo;
-	arquivo = fopen(nomeArquivo, "wb"); // Cria um arquivo binário para gravação
+    /** Criando Arquivo
+     * 		geração randomica de´números de 1 a 1000
+     */
+    FILE *arquivo;
+    arquivo = fopen(nomeArquivo, "wb");  // Cria um arquivo binário para gravação
 
     if (arquivo == NULL) {
         printf("Falha na geracao do arquivo externo\n");
         return "0";
     }
 
-    //Randomizando chaves
-	TRegistro *registros = malloc(numeroRegistros * sizeof(TRegistro)); // Para que seja possivel gerar mais elementos
-    //TRegistro registros[numeroRegistros];
+    // Randomizando chaves
+    TRegistro *registros = malloc(numeroRegistros * sizeof(TRegistro));  // Para que seja possivel gerar mais elementos
+    // TRegistro registros[numeroRegistros];
 
     srand(time(NULL));
-    for (int i = 0; i < numeroRegistros; i++){
-    	registros[i].chave = rand() % 1000;
-    	registros[i].dado1 = rand();
+    for (int i = 0; i < numeroRegistros; i++) {
+        registros[i].chave = rand() % 100000;
+        registros[i].dado1 = rand();
 
-    	char iString[10]; 
-		itoa(i, iString, 10); //Converte int para string
-		char txt[] = "Registro numero ";
-    	strcat(txt, iString);
-    	strcpy(registros[i].dado2, txt);
+        char iString[10];
+        itoa(i, iString, 10);  // Converte int para string
+        char txt[] = "Registro numero ";
+        strcat(txt, iString);
+        strcpy(registros[i].dado2, txt);
     }
-    
-    fwrite (registros, sizeof(TRegistro), numeroRegistros, arquivo);
+
+    fwrite(registros, sizeof(TRegistro), numeroRegistros, arquivo);
 
     fclose(arquivo);
-	free(registros);
+    free(registros);
 
     return nomeArquivo;
 }

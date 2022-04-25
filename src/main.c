@@ -97,9 +97,7 @@ int main(int argc, char const *argv[]) {
         case 3:  // árvore B
             printf("### Pesquisa arvore B ###\n");
 
-            if (!strcmp(pesquisa, "pesquisa")) {
-                b(quantidade, situacao, chave, opcional);
-            }
+            b(quantidade, situacao, chave, opcional);
 
             break;
         case 4:  // árvore B estrela

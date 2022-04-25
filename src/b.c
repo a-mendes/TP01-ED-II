@@ -18,17 +18,19 @@ int b(int quantidade, int situacao, int chave, int opcional) {
     }
 
     b_TipoApontador arvore = montarArvoreBFromArquivo(quantidade, arquivo);
-    fclose(arquivo);  // fecha o arquivo de registros
-
-    if (chave != -1) {
-        b_PesquisaComTimer(chave, arvore);
-    } else {
-        for (int i = 0; i < 20; i++) {
-            b_PesquisaComTimer(rand() % 1000, arvore);
-        }
-    }
+    fclose(arquivo);
 
     montarArquivoFromArvoreB(arvore);
+
+    // fecha o arquivo de registros
+
+    if (chave != -1) {
+        b_PesquisaComTimer(chave);
+    } else {
+        for (int i = 0; i < 20; i++) {
+            b_PesquisaComTimer(rand() % 10000);
+        }
+    }
 
     return 0;
 }
@@ -50,7 +52,7 @@ b_Bloco criarBlocoArvore(b_TipoApontador arvore, int father_pointer) {
         bloco.p[i] = -1;
     }
 
-    imprimirNodo(arvore);
+    // imprimirNodo(arvore);
 
     return bloco;
 }
@@ -61,7 +63,6 @@ void escreverNoArquivo(FILE *arquivo, b_TipoApontador arvore, int *current_point
     }
 
     (*current_pointer)++;
-    printf("Bloco %d | ", *current_pointer);
 
     b_Bloco bloco = criarBlocoArvore(arvore, father_pointer);
     // escreve o bloco na memoria
@@ -110,29 +111,38 @@ void imprimirArquivoArvoreB(FILE *arquivo) {
 }
 
 void montarArquivoFromArvoreB(b_TipoApontador arvore) {
+    struct timeval stop, start;
+    gettimeofday(&start, NULL);
+
     FILE *arquivo = fopen("data/btree.dat", "wb+");
 
     int count = -1;
     escreverNoArquivo(arquivo, arvore, &count, -1);
-    imprimirArquivoArvoreB(arquivo);
+    // imprimirArquivoArvoreB(arquivo);
 
     fclose(arquivo);
+
+    gettimeofday(&stop, NULL);
+    printf("\nTempo de execucao (criacao do arquivo btree.dat): %lu us\n\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);  // imprime o tempo de execução
 }
 
-void b_PesquisaComTimer(int chave, b_TipoApontador arvore) {
-    clock_t startSearch, endSearch;
-    startSearch = clock();
+void b_PesquisaComTimer(int chave) {
+    struct timeval stop, start;
+    gettimeofday(&start, NULL);
+
+    FILE *arquivo = fopen("data/btree.dat", "rb");
 
     TRegistro item = {.chave = chave, .dado1 = 0, .dado2 = 0};
-    if (b_Pesquisa(&item, arvore)) {
+    if (b_PesquisaArquivo(&item, 0, arquivo)) {
         printf("Chave %d presente | Dado 1: %lld, Dado2: %s", item.chave, item.dado1, item.dado2);
     } else {
         printf("Chave %d presente nao esta presente", chave);
     }
 
-    endSearch = clock();
+    fclose(arquivo);
 
-    printf("\nTempo de execucao (leitura do arquivo): %lf\n\n", ((double)(endSearch - startSearch)));  // imprime o tempo de execução
+    gettimeofday(&stop, NULL);
+    printf("\nTempo de execucao (pesquisa no arquivo): %lu us\n\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
 }
 
 b_TipoApontador montarArvoreBFromArquivo(int quantidade, FILE *arquivo) {
@@ -176,6 +186,32 @@ int b_Pesquisa(TRegistro *x, b_TipoApontador Ap) {
         return b_Pesquisa(x, Ap->p[i - 1]);
     } else {
         return b_Pesquisa(x, Ap->p[i]);
+    }
+}
+
+int b_PesquisaArquivo(TRegistro *x, long current_line, FILE *arquivo) {
+    if (current_line == -1) {
+        return 0;
+    }
+
+    b_Bloco bloco;
+    fseek(arquivo, current_line * sizeof(b_Bloco), SEEK_SET);
+    fread(&bloco, sizeof(b_Bloco), 1, arquivo);
+
+    long i = 1;
+
+    while (i < bloco.n && x->chave > bloco.r[i - 1].chave)
+        i++;
+
+    if (x->chave == bloco.r[i - 1].chave) {
+        *x = bloco.r[i - 1];
+        return 1;
+    }
+
+    if (x->chave < bloco.r[i - 1].chave) {
+        return b_PesquisaArquivo(x, bloco.p[i - 1], arquivo);
+    } else {
+        return b_PesquisaArquivo(x, bloco.p[i], arquivo);
     }
 }
 
