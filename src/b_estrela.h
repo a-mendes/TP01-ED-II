@@ -4,14 +4,15 @@
 #include "extra/extra.h"
 #include "extra/gerador_arquivo.h"
 
-#define TAM_STRING 5000
+#define TAM_STRING 500                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
 #define M 2  // Ordem da árvore -- número mínimo de itens por página (exceto raiz)
 
 // definir cabeçalho de função para pesquisa em arvore b_estrela
-typedef long TipoChave;
+// typedef long TipoChave;
 
-typedef enum { Interna,
-               Externa } TipoIntExt;
+typedef enum { 
+    Interna, Externa
+} TipoIntExt;
 
 typedef struct TipoPagina* TipoApontadorEstrela;
 
@@ -20,8 +21,8 @@ typedef struct TipoPagina {
     union {
         struct {
             int ni;
-            TipoChave ri[M]; // duas M posições                                                  
-            TipoApontadorEstrela pi[M + 1];
+            TRegistro ri[M * 2]; // duas M posições                                                  
+            TipoApontadorEstrela pi[M * 2 + 1];
         } U0;
         struct {
             int ne;
@@ -29,6 +30,7 @@ typedef struct TipoPagina {
         } U1;
     } UU;
 } TipoPagina;
+
 
 void Pesquisa(TRegistro *registro, TipoApontadorEstrela *Ap);
 
@@ -42,6 +44,6 @@ void Insere(TRegistro Reg, TipoApontadorEstrela *Ap);
 
 void Ins(TRegistro Reg, TipoApontadorEstrela Ap, int *Cresceu, TRegistro *RegRetorno, TipoApontadorEstrela *ApRetorno);
 
-void Printa_Arvore(TipoApontadorEstrela *Arvore);
+void bstar_Imprime(TipoApontadorEstrela arvore);
 
 #endif

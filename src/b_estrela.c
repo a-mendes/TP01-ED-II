@@ -1,5 +1,6 @@
 #include "b_estrela.h"
 
+
 void Inicializa (TipoApontadorEstrela *Arvore)
 {
     *Arvore = NULL;
@@ -14,9 +15,9 @@ void Pesquisa(TRegistro *x, TipoApontadorEstrela *Ap) {
     if((*Ap)->Pt == Interna) {
         i =1;
 
-        while(i < Pag->UU.U0.ni && x->chave > Pag->UU.U0.ri[i - 1]) i++;
+        while(i < Pag->UU.U0.ni && x->chave > Pag->UU.U0.ri[i - 1].chave) i++;
 
-        if(x->chave < Pag->UU.U0.ri[i - 1])
+        if(x->chave < Pag->UU.U0.ri[i - 1].chave)
             Pesquisa(x, &Pag->UU.U0.pi[i - 1]);
         else
             Pesquisa(x, &Pag->UU.U0.pi[i]);
@@ -31,10 +32,9 @@ void Pesquisa(TRegistro *x, TipoApontadorEstrela *Ap) {
         *x = Pag->UU.U1.re[i - 1];
 
         printf("Chave encontrada!\n");
-        printf("Chave: %d.\n", x->chave);
+        printf("Chave: %d\n", x->chave);
         printf("Dado1: %lld\n", x->dado1);
         printf("Dado2: %s\n", x->dado2);
-        printf("\n Medidas\n");
     }
     else 
         printf("TipoRegistro nao esta presente na arvore\n");
@@ -50,7 +50,7 @@ void InsereNaPagina(TipoApontadorEstrela Ap, TRegistro Reg, TipoApontadorEstrela
 		NaoAchouPosicao = (k > 0);
 
 		while(NaoAchouPosicao) {
-			if (Reg.chave >= Ap->UU.U0.ri[k - 1]) {
+			if (Reg.chave >= Ap->UU.U0.ri[k - 1].chave) {
 				NaoAchouPosicao = 0;
 				break;
 			}
@@ -62,7 +62,7 @@ void InsereNaPagina(TipoApontadorEstrela Ap, TRegistro Reg, TipoApontadorEstrela
 				NaoAchouPosicao = 0;
 		}
 
-		Ap->UU.U0.ri[k] = Reg.chave;
+		Ap->UU.U0.ri[k] = Reg;
 		Ap->UU.U0.pi[k + 1] = ApDir;
 		Ap->UU.U0.ni++;
 		return;
@@ -105,11 +105,11 @@ void Ins(TRegistro Reg, TipoApontadorEstrela Ap, int *Cresceu, TRegistro *RegRet
 	
 	//caminhamento em indices
 	if (Ap->Pt == Interna){
-		while (i < Pag->UU.U0.ni && Reg.chave > Pag->UU.U0.ri[i - 1]) {
+		while (i < Pag->UU.U0.ni && Reg.chave > Pag->UU.U0.ri[i - 1].chave) {
 			i++;
 		}
 
-		if (Reg.chave < Pag->UU.U0.ri[i - 1]) {
+		if (Reg.chave < Pag->UU.U0.ri[i - 1].chave) {
 			i--;
 		}
 
@@ -127,7 +127,7 @@ void Ins(TRegistro Reg, TipoApontadorEstrela Ap, int *Cresceu, TRegistro *RegRet
 
 		if (i < M + 1) {
 			TRegistro RegTemp;
-			RegTemp.chave = Ap->UU.U0.ri[M - 1];
+			RegTemp.chave = Ap->UU.U0.ri[M - 1].chave;
 			InsereNaPagina(ApTemp, RegTemp, Ap->UU.U0.pi[M]);
 			Ap->UU.U0.ni--;
 			InsereNaPagina(Ap, *RegRetorno, *ApRetorno);
@@ -138,12 +138,12 @@ void Ins(TRegistro Reg, TipoApontadorEstrela Ap, int *Cresceu, TRegistro *RegRet
 
 		for (j = M + 2; j <= M; j++) {
 			TRegistro RegTemp;
-			RegTemp.chave = Ap->UU.U0.ri[j - 1];
+			RegTemp.chave = Ap->UU.U0.ri[j - 1].chave;
 			InsereNaPagina(ApTemp, RegTemp, Ap->UU.U0.pi[j]);
 		}
 		Ap->UU.U0.ni = M;
 		ApTemp->UU.U0.pi[0] = Ap->UU.U0.pi[M + 1];
-		(*RegRetorno).chave = Ap->UU.U0.ri[M];
+		(*RegRetorno).chave = Ap->UU.U0.ri[M].chave;
 		*ApRetorno = ApTemp;
 	}
 
@@ -214,7 +214,7 @@ void Insere(TRegistro Reg, TipoApontadorEstrela *Ap) {
 		else{	
 			ApTemp->Pt = Interna;
 			ApTemp->UU.U0.ni = 1;
-            ApTemp->UU.U0.ri[0] = RegRetorno.chave; // troca
+            ApTemp->UU.U0.ri[0] = RegRetorno; // troca
 			//ApTemp->UU.U0.ri[0] = RegRetorno;
 			ApTemp->UU.U0.pi[1] = ApRetorno;
 			ApTemp->UU.U0.pi[0] = *Ap;
@@ -229,7 +229,7 @@ void b_estrela(int quantidade, int chave, int opcional) {
     TipoApontadorEstrela Ap;
     TRegistro item;
 
-    char *registros = gerarArquivoAscendente(quantidade);
+    char *registros = gerarArquivoAleatorio(quantidade);
 
     FILE *arquivo = fopen(registros, "rb");
 
@@ -239,21 +239,32 @@ void b_estrela(int quantidade, int chave, int opcional) {
     Ap = malloc(sizeof(TipoApontadorEstrela));
     Inicializa (&Ap);
 
-    while (fread(&item, sizeof(TRegistro), 1, arquivo) == 1) {
+    while (fread(&item, sizeof(TRegistro), 1, arquivo) == 1) {;
         Insere(item, &Ap);
     }
 
     item.chave = chave;
+
+    printf("\n\n%d %d %d %d %d %d\n\n", item.chave, Ap->UU.U0.ni, Ap->UU.U0.pi[0]->UU.U0.ni, Ap->UU.U0.ri[0], Ap->UU.U0.pi[0]->UU.U0.ri[0].chave, Ap->UU.U0.pi[0]->UU.U0.ri[1].chave);
     
     Pesquisa(&item , &Ap);
 }
 
-void Printa_Arvore(TipoApontadorEstrela Ap) {
-    if(Ap == NULL) {
-        return;
-    }
 
-    Printa_Arvore(Ap->UU.U0.pi[0]);
-    printf("%s\n", );
-    Printa_Arvore(Ap->UU.U0.pi[]);
-}
+// void bstar_Imprime(TipoApontadorEstrela arvore) {
+//     int i = 0;
+//     if (arvore == NULL) return;
+
+
+
+//     while (i <= arvore->UU.U0.ni) {
+//         bstar_Imprime(arvore->UU.U0.pi[i]);
+
+//         if (i != arvore->UU.U0.ni)
+//             printf("%d ", arvore->UU.U0.ri[i].chave);
+
+//         i++;
+//     }
+//     printf("\n\nOUTIO2\n\n");
+// }
+
