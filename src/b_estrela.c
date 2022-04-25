@@ -6,6 +6,7 @@ void Inicializa (TipoApontadorEstrela *Arvore)
     *Arvore = NULL;
 }
 
+int cont = 0;
 
 void Pesquisa(TRegistro *x, TipoApontadorEstrela *Ap) {
     int i;
@@ -13,12 +14,14 @@ void Pesquisa(TRegistro *x, TipoApontadorEstrela *Ap) {
     Pag = *Ap;
 
     if((*Ap)->Pt == Interna) {
-        i =1;
+        i = 1;
 
         while(i < Pag->UU.U0.ni && x->chave > Pag->UU.U0.ri[i - 1].chave) i++;
 
-        if(x->chave < Pag->UU.U0.ri[i - 1].chave)
+        if(x->chave < Pag->UU.U0.ri[i - 1].chave) {
+			printf("\n\nCont: %d -- i: %d -- ni: %d -- fol: %d -- chaAt: %d\n\n", cont++, i, Pag->UU.U0.ni, Pag->UU.U1.ne, Pag->UU.U0.ri[i].chave);
             Pesquisa(x, &Pag->UU.U0.pi[i - 1]);
+		}
         else
             Pesquisa(x, &Pag->UU.U0.pi[i]);
 
@@ -245,26 +248,29 @@ void b_estrela(int quantidade, int chave, int opcional) {
 
     item.chave = chave;
 
-    printf("\n\n%d %d %d %d %d %d\n\n", item.chave, Ap->UU.U0.ni, Ap->UU.U0.pi[0]->UU.U0.ni, Ap->UU.U0.ri[0], Ap->UU.U0.pi[0]->UU.U0.ri[0].chave, Ap->UU.U0.pi[0]->UU.U0.ri[1].chave);
+	// bstar_Imprime(Ap);
+
+    // printf("\n\n%d %d %d %d %d %d\n\n", item.chave, Ap->UU.U0.ni, Ap->UU.U0.pi[0]->UU.U0.ni, Ap->UU.U0.ri[0], Ap->UU.U0.pi[0]->UU.U0.ri[0].chave, Ap->UU.U0.pi[0]->UU.U0.ri[1].chave);
     
+	printf("\n AQUI ANTES %s\n", item.dado2);
     Pesquisa(&item , &Ap);
+	printf("\n AQUI DEPOIS %s  ch: %d  outros: %lld\n", item.dado2, item.chave, item.dado1);
 }
 
 
-// void bstar_Imprime(TipoApontadorEstrela arvore) {
-//     int i = 0;
-//     if (arvore == NULL) return;
 
+void bstar_Imprime(TipoApontadorEstrela arvore) {
+    int i = 0;
+    if (arvore == NULL || arvore->Pt == Externa) return;
 
+    while (i <= arvore->UU.U0.ni) {
+        bstar_Imprime(arvore->UU.U0.pi[i]);
 
-//     while (i <= arvore->UU.U0.ni) {
-//         bstar_Imprime(arvore->UU.U0.pi[i]);
-
-//         if (i != arvore->UU.U0.ni)
-//             printf("%d ", arvore->UU.U0.ri[i].chave);
-
-//         i++;
-//     }
-//     printf("\n\nOUTIO2\n\n");
-// }
-
+        if (i != arvore->UU.U0.ni){
+            printf("%d ", arvore->UU.U0.ri[i].chave);
+			printf("\n\nCont: %d -- i: %d -- ni: %d -- pt: %d -- fol: %d \n\n", cont++, i, arvore->UU.U0.ni, arvore->Pt, arvore->UU.U1.ne);
+		}
+        i++;
+    }
+    
+}
