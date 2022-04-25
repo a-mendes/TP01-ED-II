@@ -23,7 +23,6 @@ typedef struct b_Bloco {
 } b_Bloco;
 
 // funções
-
 void b_Inicializa(b_TipoApontador *Arvore);
 
 int b_Pesquisa(TRegistro *x, b_TipoApontador Ap);
@@ -50,10 +49,10 @@ b_TipoApontador montarArvoreBFromArquivo(int quantidade, FILE *arquivo);
 
 void b_PesquisaComTimer(int chave);
 
-void escreverNoArquivo(FILE *arquivo, b_TipoApontador arvore, int *current_pointer, int father_pointer);
+void escreverNoArquivo(FILE *arquivo, b_TipoApontador arvore, int *current_pointer, int father_pointer, OpCounter *operacoes);
 
 void montarArquivoFromArvoreB(b_TipoApontador arvore);
 
-int b_PesquisaArquivo(TRegistro *x, long current_line, FILE *arquivo);
+int b_PesquisaArquivo(TRegistro *x, long current_line, FILE *arquivo, OpCounter *operacoes);
 
 #endif

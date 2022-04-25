@@ -28,7 +28,7 @@ int b(int quantidade, int situacao, int chave, int opcional) {
         b_PesquisaComTimer(chave);
     } else {
         for (int i = 0; i < 20; i++) {
-            b_PesquisaComTimer(rand() % 10000);
+            b_PesquisaComTimer(getRandomNumber());
         }
     }
 
@@ -57,7 +57,8 @@ b_Bloco criarBlocoArvore(b_TipoApontador arvore, int father_pointer) {
     return bloco;
 }
 
-void escreverNoArquivo(FILE *arquivo, b_TipoApontador arvore, int *current_pointer, int father_pointer) {
+void escreverNoArquivo(FILE *arquivo, b_TipoApontador arvore, int *current_pointer, int father_pointer, OpCounter *operacoes) {
+    // printf("%d ", operacoes->comparisons++);
     if (arvore == NULL) {
         return;
     }
@@ -68,11 +69,13 @@ void escreverNoArquivo(FILE *arquivo, b_TipoApontador arvore, int *current_point
     // escreve o bloco na memoria
     fseek(arquivo, (*current_pointer) * sizeof(b_Bloco), SEEK_SET);
     fwrite(&bloco, sizeof(b_Bloco), 1, arquivo);
+    operacoes->transfers++;
 
     // coloca o current_pointer no lugar de um apontador vazio do pai
     if (father_pointer != -1) {
         fseek(arquivo, father_pointer * sizeof(b_Bloco), SEEK_SET);
         fread(&bloco, sizeof(b_Bloco), 1, arquivo);
+        operacoes->transfers++;
 
         int i = 0;
         while (bloco.p[i] != -1) i++;
@@ -80,12 +83,13 @@ void escreverNoArquivo(FILE *arquivo, b_TipoApontador arvore, int *current_point
 
         fseek(arquivo, father_pointer * sizeof(b_Bloco), SEEK_SET);
         fwrite(&bloco, sizeof(b_Bloco), 1, arquivo);
+        operacoes->transfers++;
     }
 
     father_pointer = *current_pointer;
 
     for (int i = 0; i < arvore->n + 1; i++) {
-        escreverNoArquivo(arquivo, arvore->p[i], current_pointer, father_pointer);
+        escreverNoArquivo(arquivo, arvore->p[i], current_pointer, father_pointer, operacoes);
     }
 }
 
@@ -116,14 +120,15 @@ void montarArquivoFromArvoreB(b_TipoApontador arvore) {
 
     FILE *arquivo = fopen("data/btree.dat", "wb+");
 
+    OpCounter operacoes = (OpCounter){0};
     int count = -1;
-    escreverNoArquivo(arquivo, arvore, &count, -1);
+    escreverNoArquivo(arquivo, arvore, &count, -1, &operacoes);
     // imprimirArquivoArvoreB(arquivo);
 
     fclose(arquivo);
 
     gettimeofday(&stop, NULL);
-    printf("\nTempo de execucao (criacao do arquivo btree.dat): %lu us\n\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);  // imprime o tempo de execução
+    printf("\nTempo de execucao (criacao do arquivo btree.dat): %lu us\nNumero de transferencias: %ld\n\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec, operacoes.transfers);  // imprime o tempo de execução
 }
 
 void b_PesquisaComTimer(int chave) {
@@ -132,17 +137,18 @@ void b_PesquisaComTimer(int chave) {
 
     FILE *arquivo = fopen("data/btree.dat", "rb");
 
+    OpCounter operacoes = (OpCounter){0};
     TRegistro item = {.chave = chave, .dado1 = 0, .dado2 = 0};
-    if (b_PesquisaArquivo(&item, 0, arquivo)) {
+    if (b_PesquisaArquivo(&item, 0, arquivo, &operacoes)) {
         printf("Chave %d presente | Dado 1: %lld, Dado2: %s", item.chave, item.dado1, item.dado2);
     } else {
-        printf("Chave %d presente nao esta presente", chave);
+        printf("Chave %d nao esta presente", chave);
     }
 
     fclose(arquivo);
 
     gettimeofday(&stop, NULL);
-    printf("\nTempo de execucao (pesquisa no arquivo): %lu us\n\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
+    printf("\nTempo de execucao (pesquisa no arquivo): %lu us\nNumero de transferencias: %ld\nNumero de comparacoes: %ld\n\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec, operacoes.transfers, operacoes.comparisons);
 }
 
 b_TipoApontador montarArvoreBFromArquivo(int quantidade, FILE *arquivo) {
@@ -160,6 +166,7 @@ b_TipoApontador montarArvoreBFromArquivo(int quantidade, FILE *arquivo) {
         }
     }
 
+    free(registros);
     return arvore;
 }
 
@@ -189,7 +196,8 @@ int b_Pesquisa(TRegistro *x, b_TipoApontador Ap) {
     }
 }
 
-int b_PesquisaArquivo(TRegistro *x, long current_line, FILE *arquivo) {
+int b_PesquisaArquivo(TRegistro *x, long current_line, FILE *arquivo, OpCounter *operacoes) {
+    operacoes->comparisons++;
     if (current_line == -1) {
         return 0;
     }
@@ -197,21 +205,27 @@ int b_PesquisaArquivo(TRegistro *x, long current_line, FILE *arquivo) {
     b_Bloco bloco;
     fseek(arquivo, current_line * sizeof(b_Bloco), SEEK_SET);
     fread(&bloco, sizeof(b_Bloco), 1, arquivo);
+    operacoes->transfers++;
 
     long i = 1;
 
-    while (i < bloco.n && x->chave > bloco.r[i - 1].chave)
+    operacoes->comparisons++;
+    while (i < bloco.n && x->chave > bloco.r[i - 1].chave) {
+        operacoes->comparisons++;
         i++;
+    }
 
+    operacoes->comparisons++;
     if (x->chave == bloco.r[i - 1].chave) {
         *x = bloco.r[i - 1];
         return 1;
     }
 
+    operacoes->comparisons++;
     if (x->chave < bloco.r[i - 1].chave) {
-        return b_PesquisaArquivo(x, bloco.p[i - 1], arquivo);
+        return b_PesquisaArquivo(x, bloco.p[i - 1], arquivo, operacoes);
     } else {
-        return b_PesquisaArquivo(x, bloco.p[i], arquivo);
+        return b_PesquisaArquivo(x, bloco.p[i], arquivo, operacoes);
     }
 }
 
@@ -321,137 +335,4 @@ void b_InsereNaPagina(b_TipoApontador Ap, TRegistro Reg, b_TipoApontador ApDir) 
     Ap->r[k] = Reg;
     Ap->p[k + 1] = ApDir;
     Ap->n++;
-}
-
-void b_Reconstitui(b_TipoApontador ApPag, b_TipoApontador ApPai,
-                   int PosPai, short *Diminuiu) {
-    b_TipoPagina *Aux;
-    long DispAux, j;
-    if (PosPai < ApPai->n) {
-        Aux = ApPai->p[PosPai + 1];
-        DispAux = (Aux->n - M + 1) / 2;
-        ApPag->r[ApPag->n] = ApPai->r[PosPai];
-        ApPag->p[ApPag->n + 1] = Aux->p[0];
-        ApPag->n++;
-        if (DispAux > 0) {
-            for (j = 1; j < DispAux; j++) {
-                b_InsereNaPagina(ApPag, Aux->r[j - 1], Aux->p[j]);
-            }
-            ApPai->r[PosPai] = Aux->r[DispAux - 1];
-            Aux->n -= DispAux;
-            for (j = 0; j < Aux->n; j++) {
-                Aux->r[j] = Aux->r[j + DispAux];
-            }
-            for (j = 0; j <= Aux->n; j++) {
-                Aux->p[j] = Aux->p[j + DispAux];
-            }
-            *Diminuiu = 0;
-        } else {  // Fusão
-            for (j = 1; j <= M; j++) {
-                b_InsereNaPagina(ApPag, Aux->r[j - 1], Aux->p[j]);
-            }
-            free(Aux);
-            for (j = PosPai + 1; j < ApPai->n; j++) {
-                ApPai->r[j - 1] = ApPai->r[j];
-                ApPai->p[j] = ApPai->p[j + 1];
-            }
-            ApPai->n--;
-            if (ApPai->n >= M) {
-                *Diminuiu = 0;
-            }
-        }
-    } else {  // Aux = b_TipoPagina a esquerda de ApPag
-        Aux = ApPai->p[PosPai - 1];
-        DispAux = (Aux->n - 1 + 1) / 2;
-        for (j = ApPag->n; j >= 0; j--) {
-            ApPag->r[j] = ApPag->r[j - 1];
-        }
-        ApPag->r[0] = ApPai->r[PosPai - 1];
-        for (j = ApPag->n; j >= 0; j--) {
-            ApPag->p[j + 1] = ApPag->p[j];
-        }
-        ApPag->n++;
-
-        if (DispAux > 0) {
-            for (j = 1; j < DispAux; j++) {
-                b_InsereNaPagina(ApPag, Aux->r[Aux->n - j], Aux->p[Aux->n - j + 1]);
-            }
-            ApPag->p[0] = Aux->p[Aux->n - DispAux + 1];
-            ApPai->r[PosPai - 1] = Aux->r[Aux->n - DispAux];
-            Aux->n -= DispAux;
-            *Diminuiu = 0;
-        } else {  // fusao: intercala ApPag em Aux e libera ApPag
-            for (j = 1; j <= M; j++) {
-                b_InsereNaPagina(Aux, ApPag->r[j - 1], ApPag->p[j]);
-            }
-            free(ApPag);
-            ApPai->n--;
-            if (ApPai->n >= M) {
-                *Diminuiu = 0;
-            }
-        }
-    }
-}
-
-void b_Antecessor(b_TipoApontador Ap, int Ind,
-                  b_TipoApontador ApPai, short *Diminuiu) {
-    if (ApPai->p[ApPai->n] != NULL) {
-        b_Antecessor(Ap, Ind, ApPai->p[ApPai->n], Diminuiu);
-        if (*Diminuiu) {
-            b_Reconstitui(ApPai->p[ApPai->n], ApPai, (long)ApPai->n, Diminuiu);
-        }
-        return;
-    }
-    Ap->r[Ind - 1] = ApPai->r[ApPai->n - 1];
-    ApPai->n--;
-    *Diminuiu = (ApPai->n < M);
-}
-
-void b_Ret(b_TipoChave Ch, b_TipoApontador *Ap, short *Diminuiu) {
-    long j, Ind = 1;
-    b_TipoApontador Pag;
-    if (*Ap == NULL) {
-        printf("Erro: registro nao esta na arvore\n");
-        *Diminuiu = 0;
-        return;
-    }
-    Pag = *Ap;
-    while (Ind < Pag->n && Ch > Pag->r[Ind - 1].chave) {
-        Ind++;
-    }
-    if (Ch == Pag->r[Ind - 1].chave) {
-        if (Pag->p[Ind - 1] == NULL) {
-            Pag->n--;
-            *Diminuiu = (Pag->n < M);
-            for (j = Ind; j <= Pag->n; j++) {
-                Pag->r[j - 1] = Pag->r[j];
-                Pag->p[j] = Pag->p[j + 1];
-            }
-            return;
-        }
-        // b_TipoPagina nao e folha: trocar com antecessor
-        b_Antecessor(*Ap, Ind, Pag->p[Ind - 1], Diminuiu);
-        if (*Diminuiu) {
-            b_Reconstitui(Pag->p[Ind - 1], *Ap, Ind - 1, Diminuiu);
-        }
-        return;
-    }
-    if (Ch > Pag->r[Ind - 1].chave) {
-        Ind++;
-    }
-    b_Ret(Ch, &Pag->p[Ind - 1], Diminuiu);
-    if (*Diminuiu) {
-        b_Reconstitui(Pag->p[Ind - 1], *Ap, Ind - 1, Diminuiu);
-    }
-}
-
-void b_Retira(b_TipoChave Ch, b_TipoApontador *Ap) {
-    short Diminuiu;
-    b_TipoApontador Aux;
-    b_Ret(Ch, Ap, &Diminuiu);
-    if (Diminuiu && (*Ap)->n == 0) {
-        Aux = *Ap;
-        *Ap = Aux->p[0];
-        free(Aux);
-    }
 }

@@ -144,15 +144,13 @@ char *gerarArquivoAleatorio(int numeroRegistros) {
      * 		geração randomica de´números de 1 a 1000
      */
     FILE *arquivo;
-	arquivo = fopen(nomeArquivo, "rb");
+    arquivo = fopen(nomeArquivo, "rb");
 
     // Permite que  caso já exista um binario aleatorio de mesmo tamnho já criado, não seja criado outro
-	if(arquivo == NULL) {
-		arquivo = fopen(nomeArquivo, "wb"); // Cria um arquivo binário para gravação
-	}
-	else
-		return nomeArquivo;
-	
+    if (arquivo == NULL) {
+        arquivo = fopen(nomeArquivo, "wb");  // Cria um arquivo binário para gravação
+    } else
+        return nomeArquivo;
 
     if (arquivo == NULL) {
         printf("Falha na geracao do arquivo externo\n");
@@ -165,7 +163,7 @@ char *gerarArquivoAleatorio(int numeroRegistros) {
 
     srand(time(NULL));
     for (int i = 0; i < numeroRegistros; i++) {
-        registros[i].chave = rand() % 100000;
+        registros[i].chave = getRandomNumber();
         registros[i].dado1 = rand();
 
         char iString[10];
@@ -181,4 +179,14 @@ char *gerarArquivoAleatorio(int numeroRegistros) {
     free(registros);
 
     return nomeArquivo;
+}
+
+long getRandomNumber() {
+    unsigned long x;
+    x = rand();
+    x <<= 15;
+    x ^= rand();
+    x %= 1000001;
+
+    return x;
 }

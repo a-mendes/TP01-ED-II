@@ -10,16 +10,21 @@
 typedef struct {
     int chave;
     long long dado1;
-    char dado2[5000];
+    char dado2[50];
 } TRegistro;
 
 void printaRegistros(int tamanho, FILE *arquivo);
 
-struct timezone {
+struct t_timezone {
     int tz_minuteswest;
     int tz_dsttime;
 };
 
-int gettimeofday(struct timeval *tv, struct timezone *tz);
+typedef struct OpCounter {
+    long transfers;
+    long comparisons;
+} OpCounter;
+
+int gettimeofday(struct timeval *tv, struct t_timezone *tz);
 
 #endif

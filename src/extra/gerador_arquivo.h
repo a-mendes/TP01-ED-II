@@ -13,4 +13,5 @@ char* gerarArquivoAleatorio(int numeroRegistros);
 // 4
 char* gerarArquivoOrdenado(int numeroRegistros, int tipoOrdenacao);
 
+long getRandomNumber();
 #endif

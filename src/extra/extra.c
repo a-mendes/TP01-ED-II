@@ -24,17 +24,15 @@ void printaRegistros(int tamanho, FILE *arquivo) {
     for (int i = 0; i < qntPag; ++i) {
         fread(registro, sizeof(TRegistro), ITENSPAGINA, arquivo);
 
-        if(qntPag == 1) {
+        if (qntPag == 1) {
             for (int j = 0; j < tamanho; j++)
-                printf("%-5d", registro[j].chave);
-        }
-        else if(qntPag > 1 && i + 1 == qntPag) {
+                printf("%-8d", registro[j].chave);
+        } else if (qntPag > 1 && i + 1 == qntPag) {
             for (int j = 0; j < tamanho % ITENSPAGINA; j++)
-                printf("%-5d", registro[j].chave);   
-        }
-        else {
+                printf("%-8d", registro[j].chave);
+        } else {
             for (int j = 0; j < ITENSPAGINA; j++)
-                printf("%-5d", registro[j].chave);
+                printf("%-8d", registro[j].chave);
         }
         printf("\n");
     }
@@ -44,7 +42,7 @@ void printaRegistros(int tamanho, FILE *arquivo) {
     free(registro);
 }
 
-int gettimeofday(struct timeval *tv, struct timezone *tz) {
+int gettimeofday(struct timeval *tv, struct t_timezone *tz) {
     if (tv) {
         FILETIME filetime; /* 64-bit value representing the number of 100-nanosecond intervals since January 1, 1601 00:00 UTC */
         ULARGE_INTEGER x;
@@ -63,9 +61,9 @@ int gettimeofday(struct timeval *tv, struct timezone *tz) {
         tv->tv_usec = (long)(usec % 1000000ULL);
     }
     if (tz) {
-        TIME_ZONE_INFORMATION timezone;
-        GetTimeZoneInformation(&timezone);
-        tz->tz_minuteswest = timezone.Bias;
+        TIME_ZONE_INFORMATION t_timezone;
+        GetTimeZoneInformation(&t_timezone);
+        tz->tz_minuteswest = t_timezone.Bias;
         tz->tz_dsttime = 0;
     }
     return 0;
