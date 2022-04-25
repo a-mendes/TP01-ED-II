@@ -2,14 +2,19 @@
 
 // Pré-processamento dos dados
 int sequencial(int quantidade, int situacao, int chave, int opcional) {
+    // quantidade de registros do arquivo binário - Ordenado - chave procurada - opcional (print dos registros)
+
     Indice *tabela;  // tabela de índices
     TRegistro *aux;  // item auxiliar para leitura de registros
     TRegistro item;  // chave de busca
     double tamanho;  // tamanho da tabela de índices
 
-    // variáveis para medir o tempo de execução
-    clock_t startIndice, endIndice;
-    double time;
+    // contadores de operações
+    OpCounter opCount;
+    opCount.comparisons = 0;
+    opCount.transfers = 0;
+
+    struct timeval stop, start;  // variáveis para medir o tempo de execução
 
     // Gera o arquivo com a quantidade de registros informada
     char *registros = gerarArquivoAscendente(quantidade);
@@ -17,11 +22,7 @@ int sequencial(int quantidade, int situacao, int chave, int opcional) {
     // Abre o arquivo de registros
     FILE *arquivo = fopen(registros, "rb");
 
-    // Imprime os registros
-    if (opcional)
-        printaRegistros(quantidade, arquivo);
-
-    // Descobre a quantidade de páginas para alocar a tabela de índices
+    // Descobre o tamanho das páginas para alocar a tabela de índices
     if (quantidade % ITENSPAGINA == 0) {
         tamanho = quantidade / ITENSPAGINA;
     } else {
@@ -32,16 +33,35 @@ int sequencial(int quantidade, int situacao, int chave, int opcional) {
     tabela = (Indice *)malloc(tamanho * sizeof(Indice));
     aux = (TRegistro *)malloc(ITENSPAGINA * sizeof(TRegistro));
 
-    startIndice = clock();  // inicia a contagem do tempo
+    gettimeofday(&start, NULL); // inicia a contagem do tempo
 
     for (int i = 0; i < tamanho; i++) {                       // percorre todas as páginas
-        fread(aux, sizeof(TRegistro), ITENSPAGINA, arquivo);  // lê 20 registros por acesso (1 página)
+        opCount.transfers++;                                  // incrementa o contador de transferências
+        opCount.comparisons++;                                // incrementa o contador de comparações
+
+        fread(aux, sizeof(TRegistro), ITENSPAGINA, arquivo);  // lê ITENSPAGINA registros por acesso (1 página)
         tabela[i].chave = aux[0].chave;                       // salva a chave do primeiro registro na tabela de indices
     }
 
-    endIndice = clock();                                            // finaliza o cronômetro
-    time = ((double)(endIndice - startIndice)) / CLOCKS_PER_SEC;    // calcula o tempo de execução
-    printf("Tempo de execucao (criacao de indices): %lf\n", time);  // imprime o tempo de execução
+    gettimeofday(&stop, NULL); // finaliza a contagem do tempo
+
+    printf("Tempo de execucao (Leitura): %lu us\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
+    printf("Transferencias: %d\n", opCount.transfers);
+    printf("Comparacoes: %d\n", opCount.comparisons);
+
+    return 1;
+
+    // Imprime os registros
+    if (opcional) {
+        printaRegistros(quantidade, arquivo);
+
+        // Imprime a tabela de índices
+        printf("Tabela de indices\n");
+        for (int i = 0; i < tamanho; i++) {
+            printf("%d\t", tabela[i].chave);
+        }
+        printf("\n");
+    }
 
     rewind(arquivo);  // retorna o ponteiro para o início do arquivo
 
@@ -76,12 +96,18 @@ int pesquisa(Indice *tabela, int tamanho, int quantidade, TRegistro *item, FILE 
     int qntRegistros;   // quantidade de registros por página
     int position;       // posição do arquivo
 
+    // contadores de operações
+    OpCounter opCount;
+    opCount.comparisons = 0;
+    opCount.transfers = 0;
+
     // variáveis para medir o tempo de execução
     clock_t startPesquisa, endPesquisa;
     double time;
 
     //  busca pela pagina onde o registro está inserido
     for (int i = 0; i < tamanho; i++) {
+        opCount.comparisons++;
         if (item->chave >= tabela[i].chave)
             contador++;
     }
@@ -109,7 +135,8 @@ int pesquisa(Indice *tabela, int tamanho, int quantidade, TRegistro *item, FILE 
     // lê os registros da página onde contém o item
     fread(pagina, sizeof(TRegistro), qntRegistros, arquivo);
 
-    startPesquisa = clock();  // inicia a contagem do tempo
+    struct timeval stop, start;
+    gettimeofday(&start, NULL);
 
     // Utiliza da busca binária para encontrar o item procurado
     int left = 0;
@@ -118,23 +145,26 @@ int pesquisa(Indice *tabela, int tamanho, int quantidade, TRegistro *item, FILE 
     while (left <= right) {
         int mid = (left + right) / 2;
         if (pagina[mid].chave == item->chave) {
+            opCount.comparisons++;
             *item = pagina[mid];  // retorna o item encontrado
 
-            endPesquisa = clock();                                                 // finaliza o cronômetro
-            time = ((double)(endPesquisa - startPesquisa)) / CLOCKS_PER_SEC;       // calcula o tempo de execução
-            printf("Tempo de execucao (busca sequencial indexada): %lf\n", time);  // imprime o tempo de execução
+            gettimeofday(&stop, NULL);
+            printf("\nTempo de execucao da busca binaria: %lu us\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
 
             return 1;
         } else if (pagina[mid].chave < item->chave) {
+            opCount.comparisons++;
             left = mid + 1;
         } else {
+            opCount.comparisons++;
             right = mid - 1;
         }
     }
 
-    endPesquisa = clock();                                                 // finaliza o cronômetro
-    time = ((double)(endPesquisa - startPesquisa)) / CLOCKS_PER_SEC;       // calcula o tempo de execução
-    printf("Tempo de execucao (busca sequencial indexada): %lf\n", time);  // imprime o tempo de execução
+    gettimeofday(&stop, NULL);
+    printf("\nTempo de execucao (pesquisa no arquivo): %lu us\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
+    printf("Comparacoes: %d\n", opCount.comparisons);
+    printf("Transferencias: %d\n", opCount.transfers);
 
     free(pagina);  // libera a página de registros
     return 0;

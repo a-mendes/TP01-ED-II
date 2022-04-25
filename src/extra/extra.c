@@ -9,30 +9,37 @@
 
 // imprime os registros
 void printaRegistros(int tamanho, FILE *arquivo) {
+    rewind(arquivo);  // volta o ponteiro do arquivo para o início
+
     TRegistro *registro = malloc(ITENSPAGINA * sizeof(TRegistro));
+
+    int qntPag;
 
     printf("Registros\n");
 
-    int qntPag = tamanho / ITENSPAGINA;
+    if (tamanho % ITENSPAGINA == 0) {
+        qntPag = tamanho / ITENSPAGINA;
+    } else {
+        qntPag = tamanho / ITENSPAGINA + 1;
+    }
 
     for (int i = 0; i < qntPag; ++i) {
         fread(registro, sizeof(TRegistro), ITENSPAGINA, arquivo);
 
-        if (qntPag == 1) {
-            for (int j = 0; j < tamanho; j++)
-                printf("%-8d", registro[j].chave);
-        } else if (qntPag > 1 && i + 1 == qntPag) {
+        if (i == qntPag - 1 && tamanho % ITENSPAGINA != 0) {
             for (int j = 0; j < tamanho % ITENSPAGINA; j++)
-                printf("%-8d", registro[j].chave);
-        } else {
+                printf("%d\t", registro[j].chave);
+        }
+
+        else {
             for (int j = 0; j < ITENSPAGINA; j++)
-                printf("%-8d", registro[j].chave);
+                printf("%d\t", registro[j].chave);
         }
         printf("\n");
     }
 
     printf("\n");
-    fseek(arquivo, 0, SEEK_SET);
+    rewind(arquivo);
     free(registro);
 }
 

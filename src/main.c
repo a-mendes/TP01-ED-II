@@ -31,40 +31,26 @@ int main(int argc, char const *argv[]) {
 
     srand(time(NULL));
 
-    char pesquisa[8];  // chamada do método
-    // strcpy(pesquisa, argv[1]);       // copia o método de pesquisa
-
-    int metodo = -1;      //= atoi(argv[2]);      // metodo de pesquisa a ser executado (1 - sequencial, 2 - binaria, 3 - B, 4 - B estrela)
-    int quantidade = -1;  //= atoi(argv[3]);  // quantidade de registros do arquivo (100, 200, 2k, 20k, 200k, 2kk)
-    int situacao = 1;     //= atoi(argv[4]);    // situação de ordem do arquivo (1 - Crescente, 2 - Decrescente, 3 - Desordenado)
-    int chave = -1;
-    int opcional = 0;
-
-    // if (argv[5] != NULL) {
-    //     chave = atoi(argv[5]);       // chave a ser pesquisada no arquivo
-
-    //     if (argv[6] != NULL)         // parâmetro opcional (1 - imprime os registros, 0 - não imprime os registros)
-    //         opcional = atoi(argv[6]);
-    // }
+    int metodo = -1;      // metodo de pesquisa a ser executado (1 - sequencial, 2 - binaria, 3 - B, 4 - B estrela)
+    int quantidade = -1;  // quantidade de registros do arquivo (100, 200, 2k, 20k, 200k, 2kk)
+    int situacao = 1;     // situação de ordem do arquivo (1 - Crescente, 2 - Decrescente, 3 - Desordenado)
+    int chave = -1;       // chave a ser pesquisada no arquivo
+    int opcional = 0;     // parâmetro opcional (1 - imprime os registros, 0 - não imprime os registros)
 
     if (argv[1] != NULL) {
-        strcpy(pesquisa, argv[1]);
+        metodo = atoi(argv[1]);
 
         if (argv[2] != NULL) {
-            metodo = atoi(argv[2]);
+            quantidade = atoi(argv[2]);
 
             if (argv[3] != NULL) {
-                quantidade = atoi(argv[3]);
+                situacao = atoi(argv[3]);
 
                 if (argv[4] != NULL) {
-                    situacao = atoi(argv[4]);
+                    chave = atoi(argv[4]);
 
                     if (argv[5] != NULL) {
-                        chave = atoi(argv[5]);
-
-                        if (argv[6] != NULL) {
-                            opcional = atoi(argv[6]);
-                        }
+                        opcional = atoi(argv[5]);
                     }
                 }
             }
@@ -76,13 +62,13 @@ int main(int argc, char const *argv[]) {
         case 1:  // acesso sequencial
             printf("### Pesquisa sequencial ###\n");
 
-            if (!strcmp(pesquisa, "pesquisa") && chave != -1) {
+            if (chave != -1) {
                 sequencial(quantidade, situacao, chave, opcional);
-            } else if (!strcmp(pesquisa, "pesquisa") && quantidade > 0) {
+            } else if (quantidade > 0) {
                 for (int i = 0; i < 20; i++) {
                     printf("Pesquisa de numero %d\n", i + 1);
 
-                    chave = rand() % 1000;
+                    chave = getRandomNumber();
                     printf("Chave: %d\n", chave);
 
                     sequencial(quantidade, situacao, chave, opcional);

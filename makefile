@@ -1,7 +1,7 @@
 #Windows Makefile
 
 all: main.o gerador_arquivo.o extra.o sequencial.o binaria.o b.o b_estrela.o
-	@gcc ./obj/main.o ./obj/gerador_arquivo.o ./obj/extra.o ./obj/sequencial.o ./obj/binaria.o ./obj/b.o ./obj/b_estrela.o -o TP1
+	@gcc ./obj/main.o ./obj/gerador_arquivo.o ./obj/extra.o ./obj/sequencial.o ./obj/binaria.o ./obj/b.o ./obj/b_estrela.o -o pesquisa
 
 main.o: ./src/main.c
 	@gcc -c ./src/main.c -o ./obj/main.o
@@ -25,7 +25,7 @@ b_estrela.o: ./src/b_estrela.c
 	@gcc -c ./src/b_estrela.c -o ./obj/b_estrela.o
 
 run:
-	@./TP1.exe
+	@./pesquisa.exe
 
 go:
 	@make all
