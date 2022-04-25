@@ -63,7 +63,7 @@ int main(int argc, char const *argv[]) {
             printf("### Pesquisa sequencial ###\n");
 
             if (chave != -1) {
-                sequencial(quantidade, situacao, chave, opcional);
+                preProcessamento(quantidade, situacao, chave, opcional);
             } else if (quantidade > 0) {
                 for (int i = 0; i < 20; i++) {
                     printf("Pesquisa de numero %d\n", i + 1);
@@ -71,7 +71,7 @@ int main(int argc, char const *argv[]) {
                     chave = getRandomNumber();
                     printf("Chave: %d\n", chave);
 
-                    sequencial(quantidade, situacao, chave, opcional);
+                    preProcessamento(quantidade, situacao, chave, opcional);
                     printf("==============================================\n");
                 }
             }
