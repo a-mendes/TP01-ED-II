@@ -14,7 +14,7 @@ typedef struct No{
 
 int binaria(int quantidade, int situacao, int chave, int opcional);
 Noh* pesquisar(Noh *raiz, int x);
-void insere(Noh *raiz, TRegistro x);
-void inicia(Noh *raiz);
+Noh* criarNoh(TRegistro x);
+Noh* insere(Noh *raiz, TRegistro x);
 
 #endif
