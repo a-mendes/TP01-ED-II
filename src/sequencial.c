@@ -1,7 +1,7 @@
 #include "sequencial.h"
 
 // Pré-processamento dos dados
-int sequencial(int quantidade, int situacao, int chave, int opcional) {
+int preProcessamento(int quantidade, int situacao, int chave, int opcional) {
     // quantidade de registros do arquivo binário - Ordenado - chave procurada - opcional (print dos registros)
 
     Indice *tabela;  // tabela de índices
@@ -45,20 +45,16 @@ int sequencial(int quantidade, int situacao, int chave, int opcional) {
 
     gettimeofday(&stop, NULL);  // finaliza a contagem do tempo
 
-    printf("Tempo de execucao (Leitura): %lu ns\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
-    printf("Transferencias: %d\n", opCount.transfers);
-    printf("Comparacoes: %d\n", opCount.comparisons);
-
     // Imprime os registros
     if (opcional) {
-        printaRegistros(quantidade, arquivo);
-
         // Imprime a tabela de índices
-        printf("Tabela de indices\n");
+        printf("# Tabela de indices\n");
         for (int i = 0; i < tamanho; i++) {
             printf("%d\t", tabela[i].chave);
         }
-        printf("\n");
+        printf("\n\n");
+
+        printaRegistros(quantidade, arquivo);
     }
 
     rewind(arquivo);  // retorna o ponteiro para o início do arquivo
@@ -68,14 +64,20 @@ int sequencial(int quantidade, int situacao, int chave, int opcional) {
 
     // função de busca
     if (pesquisa(tabela, tamanho, quantidade, &item, arquivo)) {
-        printf("Registro encontrado!\n");
+        printf("# Registro encontrado!\n");
         printf("Chave: %d\n", item.chave);
         printf("Valor: %ld\n", item.dado1);
         printf("Nome: %s\n", item.dado2);
+
     } else {
-        printf("Registro nao encontrado!\n");
+        printf("# Registro nao encontrado!\n");
         printf("Chave: %d\n", item.chave);
     }
+
+    printf("# Acesso ao arquivo externo\n");
+    printf("Tempo de execucao: %lu ns\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
+    printf("Transferencias: %d\n", opCount.transfers);
+    printf("Comparacoes: %d\n\n", opCount.comparisons);
 
     free(tabela);  // libera a tabela de índices
     free(aux);     // libera o auxiliar
@@ -130,6 +132,7 @@ int pesquisa(Indice *tabela, int tamanho, int quantidade, TRegistro *item, FILE 
 
     // lê os registros da página onde contém o item
     fread(pagina, sizeof(TRegistro), qntRegistros, arquivo);
+    opCount.transfers++;  // incrementa o contador de transferências
 
     gettimeofday(&start, NULL);
 
@@ -138,13 +141,18 @@ int pesquisa(Indice *tabela, int tamanho, int quantidade, TRegistro *item, FILE 
     int right = qntRegistros - 1;
 
     while (left <= right) {
+        opCount.comparisons++;
         int mid = (left + right) / 2;
         if (pagina[mid].chave == item->chave) {
             opCount.comparisons++;
             *item = pagina[mid];  // retorna o item encontrado
 
             gettimeofday(&stop, NULL);
-            printf("\nTempo de execucao da busca binaria: %lu us\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
+
+            printf("# Busca binaria\n");
+            printf("Tempo de execucao: %lu ns\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
+            printf("Comparacoes: %d\n", opCount.comparisons);
+            printf("Transferencias: %d\n\n", opCount.transfers);
 
             return 1;
         } else if (pagina[mid].chave < item->chave) {
@@ -157,9 +165,9 @@ int pesquisa(Indice *tabela, int tamanho, int quantidade, TRegistro *item, FILE 
     }
 
     gettimeofday(&stop, NULL);
-    printf("\nTempo de execucao (pesquisa no arquivo): %lu us\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
+    printf("# Busca binaria: %lu ns\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
     printf("Comparacoes: %d\n", opCount.comparisons);
-    printf("Transferencias: %d\n", opCount.transfers);
+    printf("Transferencias: %d\n\n", opCount.transfers);
 
     free(pagina);  // libera a página de registros
     return 0;

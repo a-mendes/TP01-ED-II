@@ -15,7 +15,7 @@ void printaRegistros(int tamanho, FILE *arquivo) {
 
     int qntPag;
 
-    printf("Registros\n");
+    printf("# Registros\n");
 
     if (tamanho % ITENSPAGINA == 0) {
         qntPag = tamanho / ITENSPAGINA;

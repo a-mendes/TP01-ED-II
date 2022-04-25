@@ -13,7 +13,8 @@ typedef struct {
     int chave;
 } Indice;
 
+int pesquisaSequencial(int quantidade, int situacao, int chave, int opcional);
+int preProcessamento(int quantidade, int situacao, int chave, int opcional);
 int pesquisa(Indice *tabela, int tamanho, int quantidade, TRegistro *item, FILE *arquivo);
-int sequencial(int quantidade, int situacao, int chave, int opcional);
 
 #endif
