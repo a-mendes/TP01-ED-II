@@ -181,12 +181,13 @@ char *gerarArquivoAleatorio(int numeroRegistros) {
     return nomeArquivo;
 }
 
+// Função que retorna um inteiro aleatório entre 0 e 1000000
 long getRandomNumber() {
     unsigned long x;
     x = rand();
     x <<= 15;
     x ^= rand();
-    x %= 1000001;
+    x %= 1000000;
 
     return x;
 }

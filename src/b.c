@@ -9,21 +9,19 @@
 #include "extra/gerador_arquivo.h"
 
 int b(int quantidade, int situacao, int chave, int opcional) {
+    // Gera o arquivo de acordo com a situação especificada
     char *registros = gerarArquivoOrdenado(quantidade, situacao);
     FILE *arquivo = fopen(registros, "rb");
-    // Imprime os registros
-    if (opcional) {
-        printf("opcional");
-        printaRegistros(quantidade, arquivo);
-    }
 
+    // Cria uma árvore na memória com os valores do arquivo
     b_TipoApontador arvore = montarArvoreBFromArquivo(quantidade, arquivo);
     fclose(arquivo);
 
-    montarArquivoFromArvoreB(arvore);
+    // Cria um arquivo btree.dat com a árvore da memória
+    montarArquivoFromArvoreB(arvore, opcional);
 
-    // fecha o arquivo de registros
-
+    // Realiza a pesquisa no arquivo
+    // caso não seja especificada uma chave, faz uma pesquisa com 20 chaves aleatórias
     if (chave != -1) {
         b_PesquisaComTimer(chave);
     } else {
@@ -48,7 +46,7 @@ b_Bloco criarBlocoArvore(b_TipoApontador arvore, int father_pointer) {
     b_Bloco bloco;
     bloco.n = arvore->n;
     memcpy(&bloco.r, arvore->r, sizeof(arvore->r));
-    for (int i = 0; i < MM + 1; i++) {
+    for (int i = 0; i < b_MM + 1; i++) {
         bloco.p[i] = -1;
     }
 
@@ -63,31 +61,38 @@ void escreverNoArquivo(FILE *arquivo, b_TipoApontador arvore, int *current_point
         return;
     }
 
-    (*current_pointer)++;
+    (*current_pointer)++;  // incrementa o valor da linha atual
 
+    // Instancia um novo bloco (página) com os valores do nodo atual
     b_Bloco bloco = criarBlocoArvore(arvore, father_pointer);
-    // escreve o bloco na memoria
+
+    // Escreve o bloco na linha atual do arquivo
     fseek(arquivo, (*current_pointer) * sizeof(b_Bloco), SEEK_SET);
     fwrite(&bloco, sizeof(b_Bloco), 1, arquivo);
     operacoes->transfers++;
 
-    // coloca o current_pointer no lugar de um apontador vazio do pai
+    // retorna ao bloco pai para preencher o apontador do filho
     if (father_pointer != -1) {
+        // lê o nodo pai
         fseek(arquivo, father_pointer * sizeof(b_Bloco), SEEK_SET);
         fread(&bloco, sizeof(b_Bloco), 1, arquivo);
         operacoes->transfers++;
 
+        // preenche um apontador -1 do bloco pai com o valor do current_pointer
         int i = 0;
         while (bloco.p[i] != -1) i++;
         bloco.p[i] = (*current_pointer);
 
+        // reescreve o bloco pai
         fseek(arquivo, father_pointer * sizeof(b_Bloco), SEEK_SET);
         fwrite(&bloco, sizeof(b_Bloco), 1, arquivo);
         operacoes->transfers++;
     }
 
+    // atribui o valor do ponteiro atual no ponteiro pai para as chamadas recursivas nos blocos filhos
     father_pointer = *current_pointer;
 
+    // chamada recursiva em cada bloco filho
     for (int i = 0; i < arvore->n + 1; i++) {
         escreverNoArquivo(arquivo, arvore->p[i], current_pointer, father_pointer, operacoes);
     }
@@ -98,23 +103,23 @@ void imprimirArquivoArvoreB(FILE *arquivo) {
     b_Bloco bloco;
     int i = 0;
     while (fread(&bloco, sizeof(b_Bloco), 1, arquivo)) {
-        printf("Bloco %d | ", i);
-        printf("N: %d, ", bloco.n);
-        printf("Chaves: ");
+        printf("Bloco %d ", i);
+        // printf("N: %d, ", bloco.n);
+        printf("\nChaves: ");
         for (int i = 0; i < bloco.n; i++) {
             printf("%d ", bloco.r[i].chave);
         }
 
-        printf("Apontadores: ");
+        printf("\nApontadores: ");
         for (int i = 0; i < bloco.n + 1; i++) {
             printf("%d ", bloco.p[i]);
         }
-        printf("\n");
+        printf("\n---------------------------------------------\n");
         i++;
     }
 }
 
-void montarArquivoFromArvoreB(b_TipoApontador arvore) {
+void montarArquivoFromArvoreB(b_TipoApontador arvore, int opcional) {
     struct timeval stop, start;
     gettimeofday(&start, NULL);
 
@@ -122,8 +127,14 @@ void montarArquivoFromArvoreB(b_TipoApontador arvore) {
 
     OpCounter operacoes = (OpCounter){0};
     int count = -1;
+
+    // Função recursiva para realizar a escrita no arquivo
     escreverNoArquivo(arquivo, arvore, &count, -1, &operacoes);
-    // imprimirArquivoArvoreB(arquivo);
+
+    // imprimir os índices
+    if (opcional) {
+        imprimirArquivoArvoreB(arquivo);
+    }
 
     fclose(arquivo);
 
@@ -131,6 +142,7 @@ void montarArquivoFromArvoreB(b_TipoApontador arvore) {
     printf("\nTempo de execucao (criacao do arquivo btree.dat): %lu us\nNumero de transferencias: %ld\n\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec, operacoes.transfers);  // imprime o tempo de execução
 }
 
+// Pesquisa no arquivo btree.dat
 void b_PesquisaComTimer(int chave) {
     struct timeval stop, start;
     gettimeofday(&start, NULL);
@@ -151,7 +163,9 @@ void b_PesquisaComTimer(int chave) {
     printf("\nTempo de execucao (pesquisa no arquivo): %lu us\nNumero de transferencias: %ld\nNumero de comparacoes: %ld\n\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec, operacoes.transfers, operacoes.comparisons);
 }
 
+// Cria uma árvore na memória com os dados do arquivo
 b_TipoApontador montarArvoreBFromArquivo(int quantidade, FILE *arquivo) {
+    // Inicializa a arvore
     b_TipoApontador arvore;
     b_Inicializa(&arvore);
 
@@ -159,9 +173,11 @@ b_TipoApontador montarArvoreBFromArquivo(int quantidade, FILE *arquivo) {
     TRegistro *registros = malloc(ITENSPAGINA * sizeof(TRegistro));
     const int qntPag = quantidade < ITENSPAGINA ? 1 : quantidade / ITENSPAGINA;
 
-    for (int i = 0; i < qntPag; ++i) {
+    // Lê o arquivo em intervalos definidos por ITENSPAGINA
+    for (int i = 0; i < qntPag; i++) {
         fread(registros, sizeof(TRegistro), ITENSPAGINA, arquivo);
         for (int j = 0; j < ITENSPAGINA; j++) {
+            // Insere cada registro na árvore
             b_Insere(registros[j], &arvore);
         }
     }
@@ -197,11 +213,13 @@ int b_Pesquisa(TRegistro *x, b_TipoApontador Ap) {
 }
 
 int b_PesquisaArquivo(TRegistro *x, long current_line, FILE *arquivo, OpCounter *operacoes) {
+    // caso chegue em um apontador vazio (-1), o item nao foi encontrado
     operacoes->comparisons++;
     if (current_line == -1) {
         return 0;
     }
 
+    // faz a leitura do bloco localizado na linha atual da chamada recursiva
     b_Bloco bloco;
     fseek(arquivo, current_line * sizeof(b_Bloco), SEEK_SET);
     fread(&bloco, sizeof(b_Bloco), 1, arquivo);
@@ -209,18 +227,21 @@ int b_PesquisaArquivo(TRegistro *x, long current_line, FILE *arquivo, OpCounter 
 
     long i = 1;
 
+    // busca o índice com a chave mais proxima de x
     operacoes->comparisons++;
     while (i < bloco.n && x->chave > bloco.r[i - 1].chave) {
-        operacoes->comparisons++;
+        operacoes->comparisons += 2;
         i++;
     }
 
+    // caso tenha a mesma chave de x, encontrou o registro
     operacoes->comparisons++;
     if (x->chave == bloco.r[i - 1].chave) {
         *x = bloco.r[i - 1];
         return 1;
     }
 
+    // faz a chamada recursiva com o current_pointer do filho
     operacoes->comparisons++;
     if (x->chave < bloco.r[i - 1].chave) {
         return b_PesquisaArquivo(x, bloco.p[i - 1], arquivo, operacoes);
@@ -287,7 +308,7 @@ void b_Ins(TRegistro Reg, b_TipoApontador Ap, short *Cresceu,
         return;
     }
 
-    if (Ap->n < MM) {
+    if (Ap->n < b_MM) {
         b_InsereNaPagina(Ap, *RegRetorno, *ApRetorno);
         *Cresceu = 0;
         return;
@@ -297,21 +318,21 @@ void b_Ins(TRegistro Reg, b_TipoApontador Ap, short *Cresceu,
     ApTemp->n = 0;
     ApTemp->p[0] = NULL;
 
-    if (i < M + 1) {
-        b_InsereNaPagina(ApTemp, Ap->r[MM - 1], Ap->p[MM]);
+    if (i < b_M + 1) {
+        b_InsereNaPagina(ApTemp, Ap->r[b_MM - 1], Ap->p[b_MM]);
         Ap->n--;
         b_InsereNaPagina(Ap, *RegRetorno, *ApRetorno);
     } else {
         b_InsereNaPagina(ApTemp, *RegRetorno, *ApRetorno);
     }
 
-    for (j = M + 2; j <= MM; j++) {
+    for (j = b_M + 2; j <= b_MM; j++) {
         b_InsereNaPagina(ApTemp, Ap->r[j - 1], Ap->p[j]);
     }
 
-    Ap->n = M;
-    ApTemp->p[0] = Ap->p[M + 1];
-    *RegRetorno = Ap->r[M];
+    Ap->n = b_M;
+    ApTemp->p[0] = Ap->p[b_M + 1];
+    *RegRetorno = Ap->r[b_M];
     *ApRetorno = ApTemp;
 }
 

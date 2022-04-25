@@ -36,6 +36,7 @@ void printaRegistros(int tamanho, FILE *arquivo) {
     free(registro);
 }
 
+// Função para obter o tempo atual em milissegundos
 int gettimeofday(struct timeval *tv, struct t_timezone *tz) {
     if (tv) {
         FILETIME filetime; /* 64-bit value representing the number of 100-nanosecond intervals since January 1, 1601 00:00 UTC */

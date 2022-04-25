@@ -3,8 +3,8 @@
 
 #include "extra/extra.h"
 
-#define M 2
-#define MM 4
+#define b_M 10
+#define b_MM 20
 
 typedef long b_TipoChave;
 
@@ -12,14 +12,14 @@ typedef struct b_TipoPagina *b_TipoApontador;
 
 typedef struct b_TipoPagina {
     short n;
-    TRegistro r[MM];
-    b_TipoApontador p[MM + 1];
+    TRegistro r[b_MM];
+    b_TipoApontador p[b_MM + 1];
 } b_TipoPagina;
 
 typedef struct b_Bloco {
     short n;
-    TRegistro r[MM];
-    long p[MM + 1];
+    TRegistro r[b_MM];
+    long p[b_MM + 1];
 } b_Bloco;
 
 // funções
@@ -51,7 +51,7 @@ void b_PesquisaComTimer(int chave);
 
 void escreverNoArquivo(FILE *arquivo, b_TipoApontador arvore, int *current_pointer, int father_pointer, OpCounter *operacoes);
 
-void montarArquivoFromArvoreB(b_TipoApontador arvore);
+void montarArquivoFromArvoreB(b_TipoApontador arvore, int opcional);
 
 int b_PesquisaArquivo(TRegistro *x, long current_line, FILE *arquivo, OpCounter *operacoes);
 
