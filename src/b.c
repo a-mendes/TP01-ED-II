@@ -15,22 +15,37 @@ int b(int quantidade, int situacao, int chave, int opcional) {
 
     // Cria uma árvore na memória com os valores do arquivo
     b_TipoApontador arvore = montarArvoreBFromArquivo(quantidade, arquivo);
-    fclose(arquivo);
 
     // Cria um arquivo btree.dat com a árvore da memória
     montarArquivoFromArvoreB(arvore, opcional);
+
+    b_Free(arvore);
 
     // Realiza a pesquisa no arquivo
     // caso não seja especificada uma chave, faz uma pesquisa com 20 chaves aleatórias
     if (chave != -1) {
         b_PesquisaComTimer(chave);
     } else {
+        int *chaves = obter20RegistrosAleatorios(arquivo, quantidade);
         for (int i = 0; i < 20; i++) {
-            b_PesquisaComTimer(getRandomNumber());
+            b_PesquisaComTimer(chaves[i]);
         }
     }
 
+    fclose(arquivo);
     return 0;
+}
+
+void b_Free(b_TipoApontador arvore) {
+    if (arvore == NULL) {
+        return;
+    }
+
+    for (int i = 0; i < arvore->n + 1; i++) {
+        b_Free(arvore->p[i]);
+    }
+
+    free(arvore);
 }
 
 void imprimirNodo(b_TipoApontador nodo) {

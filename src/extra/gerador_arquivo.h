@@ -1,5 +1,7 @@
 #ifndef gerador_arquivo_h
 #define gerador_arquivo_h
+#include <stdio.h>
+#include <stdlib.h>
 
 // 1
 char* gerarArquivoAscendente(int numeroRegistros);
@@ -14,4 +16,7 @@ char* gerarArquivoAleatorio(int numeroRegistros);
 char* gerarArquivoOrdenado(int numeroRegistros, int tipoOrdenacao);
 
 long getRandomNumber();
+
+int* obter20RegistrosAleatorios(FILE* arquivo, int quantidade);
+
 #endif

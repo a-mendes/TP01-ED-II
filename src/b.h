@@ -55,4 +55,6 @@ void montarArquivoFromArvoreB(b_TipoApontador arvore, int opcional);
 
 int b_PesquisaArquivo(TRegistro *x, long current_line, FILE *arquivo, OpCounter *operacoes);
 
+void b_Free(b_TipoApontador arvore);
+
 #endif
