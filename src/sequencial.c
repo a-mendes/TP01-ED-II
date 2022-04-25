@@ -33,23 +33,21 @@ int sequencial(int quantidade, int situacao, int chave, int opcional) {
     tabela = (Indice *)malloc(tamanho * sizeof(Indice));
     aux = (TRegistro *)malloc(ITENSPAGINA * sizeof(TRegistro));
 
-    gettimeofday(&start, NULL); // inicia a contagem do tempo
+    gettimeofday(&start, NULL);  // inicia a contagem do tempo
 
-    for (int i = 0; i < tamanho; i++) {                       // percorre todas as páginas
-        opCount.transfers++;                                  // incrementa o contador de transferências
-        opCount.comparisons++;                                // incrementa o contador de comparações
+    for (int i = 0; i < tamanho; i++) {  // percorre todas as páginas
+        opCount.transfers++;             // incrementa o contador de transferências
+        opCount.comparisons++;           // incrementa o contador de comparações
 
         fread(aux, sizeof(TRegistro), ITENSPAGINA, arquivo);  // lê ITENSPAGINA registros por acesso (1 página)
         tabela[i].chave = aux[0].chave;                       // salva a chave do primeiro registro na tabela de indices
     }
 
-    gettimeofday(&stop, NULL); // finaliza a contagem do tempo
+    gettimeofday(&stop, NULL);  // finaliza a contagem do tempo
 
-    printf("Tempo de execucao (Leitura): %lu us\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
+    printf("Tempo de execucao (Leitura): %lu ns\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
     printf("Transferencias: %d\n", opCount.transfers);
     printf("Comparacoes: %d\n", opCount.comparisons);
-
-    return 1;
 
     // Imprime os registros
     if (opcional) {
@@ -101,9 +99,7 @@ int pesquisa(Indice *tabela, int tamanho, int quantidade, TRegistro *item, FILE 
     opCount.comparisons = 0;
     opCount.transfers = 0;
 
-    // variáveis para medir o tempo de execução
-    clock_t startPesquisa, endPesquisa;
-    double time;
+    struct timeval stop, start;  // variáveis para medir o tempo de execução
 
     //  busca pela pagina onde o registro está inserido
     for (int i = 0; i < tamanho; i++) {
@@ -135,7 +131,6 @@ int pesquisa(Indice *tabela, int tamanho, int quantidade, TRegistro *item, FILE 
     // lê os registros da página onde contém o item
     fread(pagina, sizeof(TRegistro), qntRegistros, arquivo);
 
-    struct timeval stop, start;
     gettimeofday(&start, NULL);
 
     // Utiliza da busca binária para encontrar o item procurado
