@@ -101,8 +101,8 @@ Noh* criarNoh(TRegistro x)
 void insere(Noh *raiz, TRegistro x)
 {
     if(raiz == NULL){
-        printf("nulo ");
         raiz = criarNoh(x);
+        printf("%d ", raiz->n.chave);
     }
     else if(x.chave > raiz->n.chave){ 
         printf("> ");
