@@ -78,7 +78,9 @@ int main(int argc, char const *argv[]) {
             break;
         case 2:  // árvore binaria
             printf("### Pesquisa Binaria ###\n");
-            // binaria();
+            
+            binaria(quantidade, situacao, chave, opcional);
+            
             break;
         case 3:  // árvore B
             printf("### Pesquisa arvore B ###\n");
