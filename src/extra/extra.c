@@ -13,13 +13,7 @@ void printaRegistros(int tamanho, FILE *arquivo) {
 
     printf("Registros\n");
 
-    int qntPag;
-
-    if (tamanho % ITENSPAGINA == 0) {
-        qntPag = tamanho / ITENSPAGINA;
-    } else {
-        qntPag = tamanho / ITENSPAGINA + 1;
-    }
+    int qntPag = tamanho / ITENSPAGINA;
 
     for (int i = 0; i < qntPag; ++i) {
         fread(registro, sizeof(TRegistro), ITENSPAGINA, arquivo);
