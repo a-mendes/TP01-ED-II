@@ -193,10 +193,13 @@ long getRandomNumber() {
 }
 
 void obter20RegistrosAleatorios(FILE *arquivo, int quantidade, int registros[20]) {
+    TRegistro aux;
+
     for (int i = 0; i < 20; i++) {
         registros[i] = (quantidade / 20) * i;
         rewind(arquivo);
         fseek(arquivo, registros[i] * sizeof(TRegistro), SEEK_SET);
-        fread(&registros[i], sizeof(TRegistro), 1, arquivo);
+        fread(&aux, sizeof(TRegistro), 1, arquivo);
+        registros[i] = aux.chave;
     }
 }
