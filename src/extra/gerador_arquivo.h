@@ -17,6 +17,6 @@ char* gerarArquivoOrdenado(int numeroRegistros, int tipoOrdenacao);
 
 long getRandomNumber();
 
-int* obter20RegistrosAleatorios(FILE* arquivo, int quantidade);
+void obter20RegistrosAleatorios(FILE* arquivo, int quantidade, int registros[20]);
 
 #endif

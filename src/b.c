@@ -26,7 +26,8 @@ int b(int quantidade, int situacao, int chave, int opcional) {
     if (chave != -1) {
         b_PesquisaComTimer(chave);
     } else {
-        int *chaves = obter20RegistrosAleatorios(arquivo, quantidade);
+        int chaves[20];
+        obter20RegistrosAleatorios(arquivo, quantidade, chaves);
         for (int i = 0; i < 20; i++) {
             b_PesquisaComTimer(chaves[i]);
         }

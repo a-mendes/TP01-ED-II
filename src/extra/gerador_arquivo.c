@@ -192,15 +192,11 @@ long getRandomNumber() {
     return x;
 }
 
-int *obter20RegistrosAleatorios(FILE *arquivo, int quantidade) {
-    int *registros = malloc(20 * sizeof(int));
-
+void obter20RegistrosAleatorios(FILE *arquivo, int quantidade, int registros[20]) {
     for (int i = 0; i < 20; i++) {
         registros[i] = (quantidade / 20) * i;
         rewind(arquivo);
         fseek(arquivo, registros[i] * sizeof(TRegistro), SEEK_SET);
         fread(&registros[i], sizeof(TRegistro), 1, arquivo);
     }
-
-    return registros;
 }
