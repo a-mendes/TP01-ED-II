@@ -4,7 +4,7 @@
 #include "extra/extra.h"
 #include "extra/gerador_arquivo.h"
 
-#define TAM_STRING 500                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+#define TAM_STRING 500
 #define M 2  // Ordem da árvore -- número mínimo de itens por página (exceto raiz)
 #define MM 4
 // definir cabeçalho de função para pesquisa em arvore b_estrela
@@ -13,12 +13,12 @@
 // typedef struct {
 // 	int chave;
 // 	long long dado1;
-// 	char dado2[500]; 
+// 	char dado2[500];
 // } TRegistro;
 
-
-typedef enum { 
-    Interna, Externa
+typedef enum {
+    Interna,
+    Externa
 } TipoIntExt;
 
 typedef struct TipoPagina *TipoApontadorEstrela;
@@ -28,31 +28,22 @@ typedef struct TipoPagina {
     union {
         struct {
             int ni;
-            TRegistro ri[MM]; // duas M posições                                                  
+            TRegistro ri[MM];  // duas M posições
             TipoApontadorEstrela pi[MM + 1];
         } U0;
         struct {
             int ne;
-            TRegistro re[MM]; // pode ser igual, mas posso fazer com tamanho diferente de MM
+            TRegistro re[MM];  // pode ser igual, mas posso fazer com tamanho diferente de MM
         } U1;
     } UU;
 } TipoPagina;
 
-
-void Pesquisa(TRegistro *registro, TipoApontadorEstrela *Ap);
-
-void Inicializa(TipoApontadorEstrela *Arvore);
-
-void b_estrela(int quantidade, int chave, int opcional); /////
-
-void InsereNaPagina(TipoApontadorEstrela Ap, TRegistro Reg, TipoApontadorEstrela ApDir);
-
-void Insere(TRegistro Reg, TipoApontadorEstrela *Ap);
-
-void Ins(TRegistro Reg, TipoApontadorEstrela Ap, int *Cresceu, TRegistro *RegRetorno, TipoApontadorEstrela *ApRetorno);
-
-void Printa_Arvore(TipoApontadorEstrela *Arvore);
-
-void bstar_Imprime(TipoApontadorEstrela arvore);
-
+void bstar_Inicializa(TipoApontadorEstrela *Arvore);
+void bstar_Pesquisa(TRegistro *x, TipoApontadorEstrela *Ap, int key, int *nTransfer, int *nCompare);
+void bstar_LerArquivo(FILE *file, int amount, TipoApontadorEstrela *Arvore);
+void bstar_Ins(TRegistro reg, TipoApontadorEstrela Ap, short *Cresceu, TRegistro *RegRetorno, TipoApontadorEstrela *ApRetorno);
+void bstar_Insere(TRegistro reg, TipoApontadorEstrela *Ap);
+void bstar_InsereNaPagina(TipoApontadorEstrela Ap, TRegistro Reg, TipoApontadorEstrela ApDir);
+void escreverValor(TipoApontadorEstrela *Ap);
+void bstar_teste();
 #endif
