@@ -1,25 +1,21 @@
 #include "sequencial.h"
 
 void sequencial(int quantidade, int situacao, int chave, int opcional) {
-    int zap = quantidade;
-
     // Gera o arquivo com a quantidade de registros informada
     char *registros = gerarArquivoAscendente(quantidade);
 
     // Abre o arquivo de registros
     FILE *arquivo = fopen(registros, "rb");
 
-    printaRegistros(quantidade, arquivo);
-    rewind(arquivo);
-
     if (chave != -1)
         preProcessamento(quantidade, chave, opcional, arquivo);
     else {
         int chaves[20];
-        obter20RegistrosAleatorios(arquivo, zap, chaves);
+        obter20RegistrosAleatorios(arquivo, quantidade, chaves);
 
         for (int i = 0; i < 20; i++) {
-            preProcessamento(quantidade, 1, opcional, arquivo);
+            rewind(arquivo);
+            preProcessamento(quantidade, chaves[i], opcional, arquivo);
         }
     }
 
@@ -28,8 +24,6 @@ void sequencial(int quantidade, int situacao, int chave, int opcional) {
 
 // Pré-processamento dos dados
 void preProcessamento(int quantidade, int chave, int opcional, FILE *arquivo) {
-    printf("Quantidade: %d\n", quantidade);
-
     Indice *tabela;  // tabela de índices
     TRegistro *aux;  // item auxiliar para leitura de registros
     TRegistro item;  // chave de busca
