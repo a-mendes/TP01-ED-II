@@ -1,8 +1,34 @@
 #include "sequencial.h"
 
+void sequencial(int quantidade, int situacao, int chave, int opcional) {
+    int zap = quantidade;
+
+    // Gera o arquivo com a quantidade de registros informada
+    char *registros = gerarArquivoAscendente(quantidade);
+
+    // Abre o arquivo de registros
+    FILE *arquivo = fopen(registros, "rb");
+
+    printaRegistros(quantidade, arquivo);
+    rewind(arquivo);
+
+    if (chave != -1)
+        preProcessamento(quantidade, chave, opcional, arquivo);
+    else {
+        int chaves[20];
+        obter20RegistrosAleatorios(arquivo, zap, chaves);
+
+        for (int i = 0; i < 20; i++) {
+            preProcessamento(quantidade, 1, opcional, arquivo);
+        }
+    }
+
+    fclose(arquivo);  // fecha o arquivo de registros
+}
+
 // Pré-processamento dos dados
-int preProcessamento(int quantidade, int situacao, int chave, int opcional) {
-    // quantidade de registros do arquivo binário - Ordenado - chave procurada - opcional (print dos registros)
+void preProcessamento(int quantidade, int chave, int opcional, FILE *arquivo) {
+    printf("Quantidade: %d\n", quantidade);
 
     Indice *tabela;  // tabela de índices
     TRegistro *aux;  // item auxiliar para leitura de registros
@@ -15,12 +41,6 @@ int preProcessamento(int quantidade, int situacao, int chave, int opcional) {
     opCount.transfers = 0;
 
     struct timeval stop, start;  // variáveis para medir o tempo de execução
-
-    // Gera o arquivo com a quantidade de registros informada
-    char *registros = gerarArquivoAscendente(quantidade);
-
-    // Abre o arquivo de registros
-    FILE *arquivo = fopen(registros, "rb");
 
     // Descobre o tamanho das páginas para alocar a tabela de índices
     if (quantidade % ITENSPAGINA == 0) {
@@ -81,10 +101,6 @@ int preProcessamento(int quantidade, int situacao, int chave, int opcional) {
 
     free(tabela);  // libera a tabela de índices
     free(aux);     // libera o auxiliar
-
-    fclose(arquivo);  // fecha o arquivo de registros
-
-    return 0;
 }
 
 // Busca sequencial indexada

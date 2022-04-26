@@ -62,19 +62,7 @@ int main(int argc, char const *argv[]) {
         case 1:  // acesso sequencial
             printf("### Pesquisa sequencial ###\n");
 
-            if (chave != -1) {
-                preProcessamento(quantidade, situacao, chave, opcional);
-            } else if (quantidade > 0) {
-                for (int i = 0; i < 20; i++) {
-                    printf("Pesquisa de numero %d\n", i + 1);
-
-                    chave = getRandomNumber();
-                    printf("Chave: %d\n", chave);
-
-                    preProcessamento(quantidade, situacao, chave, opcional);
-                    printf("==============================================\n");
-                }
-            }
+            sequencial(quantidade, situacao, chave, opcional);
             break;
         case 2:  // árvore binaria
             printf("### Pesquisa Binaria ###\n");
