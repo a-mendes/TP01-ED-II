@@ -13,10 +13,11 @@ typedef struct No{
 }Noh;
 
 void binaria(int quantidade, int situacao, int chave, int opcional);
-void binariaRandomica(int quantidade, int situacao, int chave, int opcional);
+void binariaRandomica(int quantidade, int situacao, FILE* arquivo);
 void printarResultado(Noh* resultado, int chave);
-Noh* pesquisar(Noh *raiz, int x);
-Noh* criarNoh(TRegistro x);
-Noh* insere(Noh *raiz, TRegistro x);
+Noh* pesquisar(Noh *raiz, int x, OpCounter *operacoes);
+Noh* criarNoh(TRegistro x, OpCounter *operacoes);
+Noh* insere(Noh *raiz, TRegistro x, OpCounter *operacoes);
+void finaliza(Noh* t, TRegistro* aux, FILE* arquivo);
 
 #endif

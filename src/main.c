@@ -66,11 +66,8 @@ int main(int argc, char const *argv[]) {
             break;
         case 2:  // árvore binaria
             printf("### Pesquisa Binaria ###\n");
-            if (chave != -1)
-                binaria(quantidade, situacao, chave, opcional);
-            else
-                binariaRandomica(quantidade, situacao, chave, opcional);
-            break;
+            
+            binaria(quantidade, situacao, chave, opcional);
 
             break;
         case 3:  // árvore B
