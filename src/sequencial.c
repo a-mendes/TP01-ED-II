@@ -62,6 +62,18 @@ void preProcessamento(int quantidade, int chave, int opcional, FILE *arquivo) {
     time = ((double)(endIndice - startIndice)) / CLOCKS_PER_SEC;
 
     rewind(arquivo);  // retorna o ponteiro para o início do arquivo
+    
+    // Imprime os registros
+    if (opcional == 1) {
+        // Imprime a tabela de índices
+        printf("# Tabela de indices\n");
+        for (int i = 0; i < tamanho; i++) {
+            printf("%d\t", tabela[i].chave);
+        }
+        printf("\n\n");
+
+        printaRegistros(quantidade, arquivo);
+    }
 
     // atribui a chave procurada a uma variário do tipo TRegistro
     item.chave = chave;
