@@ -4,7 +4,7 @@ void bstar_Inicializa(TipoApontadorEstrela *Arvore) {
     Arvore = NULL;
 }
 
-void bstar_Pesquisa(TRegistro *x, TipoApontadorEstrela *Ap, int key, int *nTransfer, int *nCompare) {
+void bstar_Pesquisa(TRegistro *x, TipoApontadorEstrela *Ap, int key) {
     if ((*Ap) == NULL) {
         printf("TipoRegistro nao esta presente na arvore\n");
         return;
@@ -12,32 +12,32 @@ void bstar_Pesquisa(TRegistro *x, TipoApontadorEstrela *Ap, int key, int *nTrans
 
     int i;
     TipoApontadorEstrela Pag;
-    (*Ap) = *Ap;
+    Pag = *Ap;
 
     printf("%s\n", (*Ap)->Pt == Interna ? "Interna" : "Externa");
 
     if ((*Ap)->Pt == Interna) {
         i = 1;
-        while (i < (*Ap)->UU.U0.ni && key > (*Ap)->UU.U0.ri[i - 1].chave) i++;
-        printf("Chave procurada: %d\n", key);
-        printf("Chave atual: %d\n", (*Ap)->UU.U0.ri[i - 1].chave);
-        printf("Chave à direita: %d\n", (*Ap)->UU.U0.ri[i].chave);
-        if (key < (*Ap)->UU.U0.ri[i - 1].chave)
-            bstar_Pesquisa(x, &(*Ap)->UU.U0.pi[i - 1], key, nTransfer, nCompare);
+        while (i < Pag->UU.U0.ni && key > Pag->UU.U0.ri[i - 1].chave) i++;
+        printf("Chave procurada: %d -- %d\n", key, i);
+        printf("Chave atual: %d\n", Pag->UU.U0.ri[i - 1].chave);
+        printf("Chave à direita: %d\n", Pag->UU.U0.ri[i].chave);
+        if (key < Pag->UU.U0.ri[i - 1].chave)
+            bstar_Pesquisa(x, &Pag->UU.U0.pi[i - 1], key);
         else
-            bstar_Pesquisa(x, &(*Ap)->UU.U0.pi[i], key, nTransfer, nCompare);
+            bstar_Pesquisa(x, &Pag->UU.U0.pi[i], key);
 
         return;
     }
 
     i = 1;
 
-    while (i < (*Ap)->UU.U1.ne && key > (*Ap)->UU.U1.re[i - 1].chave) i++;
+    while (i < Pag->UU.U1.ne && key > Pag->UU.U1.re[i - 1].chave) i++;
 
-    printf("Chave que existe: %d\n", (*Ap)->UU.U1.re[i - 1].chave);
+    printf("Chave que existe: %d\n", Pag->UU.U1.re[i - 1].chave);
 
-    if (key == (*Ap)->UU.U1.re[i - 1].chave) {
-        *x = (*Ap)->UU.U1.re[i - 1];
+    if (key == Pag->UU.U1.re[i - 1].chave) {
+        *x = Pag->UU.U1.re[i - 1];
 
         printf("Chave encontrada!\n");
         printf("Chave: %d\n", x->chave);
@@ -45,7 +45,7 @@ void bstar_Pesquisa(TRegistro *x, TipoApontadorEstrela *Ap, int key, int *nTrans
         printf("Dado2: %s\n", x->dado2);
 	}
     else
-        printf("TipoRegistro nao esta presente na arvore\n");
+        printf("TipoRegistro %d nao esta presente na arvore\n", key);
 }
 
 void bstar_LerArquivo(FILE *file, int amount, TipoApontadorEstrela *Arvore) {
@@ -90,7 +90,7 @@ void bstar_Ins(TRegistro reg, TipoApontadorEstrela Ap, short *Cresceu, TRegistro
 
     if (Ap->UU.U0.ni < MM) { /* Página tem Espaço */
         bstar_InsereNaPagina(Ap, *RegRetorno, *ApRetorno);
-        printf("%s\n", Ap->Pt == Interna ? "Interna" : "Externa");
+        printf("%s \n\n", Ap->Pt == Interna ? "Interna" : "Externa");
         *Cresceu = 0;
         return;
     }
@@ -113,7 +113,7 @@ void bstar_Ins(TRegistro reg, TipoApontadorEstrela Ap, short *Cresceu, TRegistro
 
     Ap->UU.U1.ne = M;
     ApTemp->UU.U0.pi[0] = Ap->UU.U0.pi[M + 1];
-    *RegRetorno = Ap->UU.U0.ri[M];
+    (*RegRetorno).chave = Ap->UU.U0.ri[M].chave;
     *ApRetorno = ApTemp;
 }
 
@@ -125,10 +125,22 @@ void bstar_Insere(TRegistro reg, TipoApontadorEstrela *Ap) {
 
     if (Cresceu) { /* Arvore cresce na altura pela raiz */
         ApTemp = (TipoPagina *)malloc(sizeof(TipoPagina));
-        ApTemp->UU.U1.ne = 1;
-        ApTemp->UU.U1.re[0] = RegRetorno;
-        ApTemp->UU.U0.pi[1] = ApRetorno;
-        ApTemp->UU.U0.pi[0] = *Ap;
+
+        if(ApRetorno == NULL) {
+            ApTemp->Pt = Externa;
+            ApTemp->UU.U1.ne = 1;
+            ApTemp->UU.U1.re[0] = RegRetorno;
+            ApTemp->UU.U0.pi[1] = ApRetorno;
+            ApTemp->UU.U0.pi[0] = *Ap;
+        }
+        else {
+            ApTemp->Pt = Interna;
+            ApTemp->UU.U0.ni = 1;
+            ApTemp->UU.U0.ri[0].chave = RegRetorno.chave;
+            ApTemp->UU.U0.pi[1] = ApRetorno;
+            ApTemp->UU.U0.pi[0] = *Ap;
+        }
+
         *Ap = ApTemp;
     }
 }
@@ -156,7 +168,7 @@ void bstar_InsereNaPagina(TipoApontadorEstrela Ap, TRegistro Reg, TipoApontadorE
 }
 
 void escreverValor(TipoApontadorEstrela *Ap) {
-    printf("PT: %s", (*Ap)->Pt == Interna ? "Interna" : "Externa");
+    printf("PT: %s\n", (*Ap)->Pt == Interna ? "Interna" : "Externa");
     if ((*Ap)->Pt == Interna) {
         for (int i = 0; i < (*Ap)->UU.U0.ni; ++i) {
             printf("Codigo: %d\n", (*Ap)->UU.U0.ri[i].chave);
@@ -191,7 +203,7 @@ TipoApontadorEstrela montarArvoreBEdoArquivo(int quantidade, FILE *arquivo) {
     return arvore;
 }
 
-
+// È AQUI ONDE vC PARA KOKOKOKOKOKOKOKOKO
 void bstar(int quantidade, int situacao, int chave, int opcional) {
     TRegistro item;
 
@@ -212,13 +224,12 @@ void bstar(int quantidade, int situacao, int chave, int opcional) {
     }
 
     item.chave = chave;
-	int o,j;
 	// bstar_Imprime(Ap);
 
     // printf("\n\n%d %d %d %d %d %d\n\n", item.chave, Ap->UU.U0.ni, Ap->UU.U0.pi[0]->UU.U0.ni, Ap->UU.U0.ri[0], Ap->UU.U0.pi[0]->UU.U0.ri[0].chave, Ap->UU.U0.pi[0]->UU.U0.ri[1].chave);
     
 	printf("\n AQUI ANTES %s\n", item.dado2);
-    bstar_Pesquisa(&item , &Ap, chave, &o, &j);
+    bstar_Pesquisa(&item , &Ap, chave);
 	printf("\n AQUI DEPOIS %s  ch: %d  outros: %lld\n", item.dado2, item.chave, item.dado1);
 }
 
@@ -245,6 +256,19 @@ void bstar_teste() {
 
 	nd[5].chave = 550;
 
+	nd[6].chave = 650;
+
+	nd[7].chave = 750;
+
+	nd[8].chave = 850;
+
+	nd[9].chave = 950;
+
+	nd[10].chave = 1050; //MAX 11
+
+
+	
+
 	printf("\nOI\n");
     bstar_Insere(nd[0], &zap);
     bstar_Insere(nd[1], &zap);
@@ -252,9 +276,18 @@ void bstar_teste() {
     bstar_Insere(nd[3], &zap);
     bstar_Insere(nd[4], &zap);
     bstar_Insere(nd[5], &zap);
+    bstar_Insere(nd[6], &zap);
+    bstar_Insere(nd[7], &zap);
+    bstar_Insere(nd[8], &zap);
+    bstar_Insere(nd[9], &zap);
+    bstar_Insere(nd[10], &zap);
+    bstar_Insere(nd[11], &zap);
+    bstar_Insere(nd[12], &zap);
 	printf("\nOI\n");
     TRegistro a;
     a.chave = 1;
-    int az;
-    bstar_Pesquisa(&a, &zap, 25, &az, &az);
+    int ch;
+    printf("\nChave: ");
+    scanf("%d", &ch);
+    bstar_Pesquisa(&a, &zap, ch);
 }

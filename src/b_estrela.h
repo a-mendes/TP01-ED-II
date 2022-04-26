@@ -38,7 +38,7 @@ typedef struct TipoPagina {
 } TipoPagina;
 
 void bstar_Inicializa(TipoApontadorEstrela *Arvore);
-void bstar_Pesquisa(TRegistro *x, TipoApontadorEstrela *Ap, int key, int *nTransfer, int *nCompare);
+void bstar_Pesquisa(TRegistro *x, TipoApontadorEstrela *Ap, int key);
 void bstar_LerArquivo(FILE *file, int amount, TipoApontadorEstrela *Arvore);
 void bstar_Ins(TRegistro reg, TipoApontadorEstrela Ap, short *Cresceu, TRegistro *RegRetorno, TipoApontadorEstrela *ApRetorno);
 void bstar_Insere(TRegistro reg, TipoApontadorEstrela *Ap);
