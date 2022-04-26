@@ -4,7 +4,6 @@
 #include "extra/extra.h"
 #include "extra/gerador_arquivo.h"
 
-#define TAM_STRING 500
 #define M 2  // Ordem da árvore -- número mínimo de itens por página (exceto raiz)
 #define MM 4
 // definir cabeçalho de função para pesquisa em arvore b_estrela
@@ -46,4 +45,5 @@ void bstar_Insere(TRegistro reg, TipoApontadorEstrela *Ap);
 void bstar_InsereNaPagina(TipoApontadorEstrela Ap, TRegistro Reg, TipoApontadorEstrela ApDir);
 void escreverValor(TipoApontadorEstrela *Ap);
 void bstar_teste();
+void bstar(int quantidade, int situacao, int chave, int opcional);
 #endif

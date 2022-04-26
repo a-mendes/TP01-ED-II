@@ -40,13 +40,13 @@ int main(int argc, char const *argv[]) {
     if (argv[1] != NULL) {
         metodo = atoi(argv[1]);
 
-        if (argv[2] != NULL) {
+        if (argv[2] != NULL ) {
             quantidade = atoi(argv[2]);
 
-            if (argv[3] != NULL) {
+            if (argv[3] != NULL && situacao > 0 && situacao < 4) {
                 situacao = atoi(argv[3]);
 
-                if (argv[4] != NULL) {
+                if (argv[4] != NULL && argv[4] > 0) {
                     chave = atoi(argv[4]);
 
                     if (argv[5] != NULL) {
@@ -56,6 +56,7 @@ int main(int argc, char const *argv[]) {
             }
         }
     }
+
 
     // Implementar menu de acesso às pesquisas
     switch (metodo) {
@@ -78,7 +79,8 @@ int main(int argc, char const *argv[]) {
             break;
         case 4:  // árvore B estrela
             printf("### Arvore B* ###\n");
-            bstar_teste();
+            bstar(quantidade, situacao, chave, opcional);
+            // bstar_teste();
             // b_estrela(quantidade, chave, opcional);
             //  ./TP1.exe pesquisa (Método) (Quantidade de registros) (Situação) (Chave) (Opcional)
 
