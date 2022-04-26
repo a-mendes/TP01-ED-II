@@ -1,9 +1,29 @@
 #include "sequencial.h"
 
-// Pré-processamento dos dados
-int preProcessamento(int quantidade, int situacao, int chave, int opcional) {
-    // quantidade de registros do arquivo binário - Ordenado - chave procurada - opcional (print dos registros)
+void sequencial(int quantidade, int situacao, int chave, int opcional) {
+    // Gera o arquivo com a quantidade de registros informada
+    char *registros = gerarArquivoAscendente(quantidade);
 
+    // Abre o arquivo de registros
+    FILE *arquivo = fopen(registros, "rb");
+
+    if (chave != -1)
+        preProcessamento(quantidade, chave, opcional, arquivo);
+    else {
+        int chaves[20];
+        obter20RegistrosAleatorios(arquivo, quantidade, chaves);
+
+        for (int i = 0; i < 20; i++) {
+            rewind(arquivo);
+            preProcessamento(quantidade, chaves[i], opcional, arquivo);
+        }
+    }
+
+    fclose(arquivo);  // fecha o arquivo de registros
+}
+
+// Pré-processamento dos dados
+void preProcessamento(int quantidade, int chave, int opcional, FILE *arquivo) {
     Indice *tabela;  // tabela de índices
     TRegistro *aux;  // item auxiliar para leitura de registros
     TRegistro item;  // chave de busca
@@ -14,13 +34,8 @@ int preProcessamento(int quantidade, int situacao, int chave, int opcional) {
     opCount.comparisons = 0;
     opCount.transfers = 0;
 
-    struct timeval stop, start;  // variáveis para medir o tempo de execução
-
-    // Gera o arquivo com a quantidade de registros informada
-    char *registros = gerarArquivoAscendente(quantidade);
-
-    // Abre o arquivo de registros
-    FILE *arquivo = fopen(registros, "rb");
+    clock_t startIndice, endIndice;  // tempo de execução da geração do índice
+    double time;
 
     // Descobre o tamanho das páginas para alocar a tabela de índices
     if (quantidade % ITENSPAGINA == 0) {
@@ -33,7 +48,7 @@ int preProcessamento(int quantidade, int situacao, int chave, int opcional) {
     tabela = (Indice *)malloc(tamanho * sizeof(Indice));
     aux = (TRegistro *)malloc(ITENSPAGINA * sizeof(TRegistro));
 
-    gettimeofday(&start, NULL);  // inicia a contagem do tempo
+    startIndice = clock();
 
     for (int i = 0; i < tamanho; i++) {  // percorre todas as páginas
         opCount.transfers++;             // incrementa o contador de transferências
@@ -43,19 +58,8 @@ int preProcessamento(int quantidade, int situacao, int chave, int opcional) {
         tabela[i].chave = aux[0].chave;                       // salva a chave do primeiro registro na tabela de indices
     }
 
-    gettimeofday(&stop, NULL);  // finaliza a contagem do tempo
-
-    // Imprime os registros
-    if (opcional) {
-        // Imprime a tabela de índices
-        printf("# Tabela de indices\n");
-        for (int i = 0; i < tamanho; i++) {
-            printf("%d\t", tabela[i].chave);
-        }
-        printf("\n\n");
-
-        printaRegistros(quantidade, arquivo);
-    }
+    endIndice = clock();
+    time = ((double)(endIndice - startIndice)) / CLOCKS_PER_SEC;
 
     rewind(arquivo);  // retorna o ponteiro para o início do arquivo
 
@@ -67,24 +71,19 @@ int preProcessamento(int quantidade, int situacao, int chave, int opcional) {
         printf("# Registro encontrado!\n");
         printf("Chave: %d\n", item.chave);
         printf("Valor: %ld\n", item.dado1);
-        printf("Nome: %s\n", item.dado2);
+        printf("Nome: %s\n\n", item.dado2);
 
     } else {
         printf("# Registro nao encontrado!\n");
-        printf("Chave: %d\n", item.chave);
+        printf("Chave: %d\n\n", item.chave);
     }
 
-    printf("# Acesso ao arquivo externo\n");
-    printf("Tempo de execucao: %lu ns\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
+    printf("Tempo de execucao (pesquisa no arquivo): %lfs\n", time);
     printf("Transferencias: %d\n", opCount.transfers);
     printf("Comparacoes: %d\n\n", opCount.comparisons);
 
     free(tabela);  // libera a tabela de índices
     free(aux);     // libera o auxiliar
-
-    fclose(arquivo);  // fecha o arquivo de registros
-
-    return 0;
 }
 
 // Busca sequencial indexada
@@ -101,7 +100,8 @@ int pesquisa(Indice *tabela, int tamanho, int quantidade, TRegistro *item, FILE 
     opCount.comparisons = 0;
     opCount.transfers = 0;
 
-    struct timeval stop, start;  // variáveis para medir o tempo de execução
+    clock_t startIndice, endIndice;  // tempo de execução da geração do índice
+    double time;
 
     //  busca pela pagina onde o registro está inserido
     for (int i = 0; i < tamanho; i++) {
@@ -134,7 +134,7 @@ int pesquisa(Indice *tabela, int tamanho, int quantidade, TRegistro *item, FILE 
     fread(pagina, sizeof(TRegistro), qntRegistros, arquivo);
     opCount.transfers++;  // incrementa o contador de transferências
 
-    gettimeofday(&start, NULL);
+    startIndice = clock();
 
     // Utiliza da busca binária para encontrar o item procurado
     int left = 0;
@@ -147,10 +147,10 @@ int pesquisa(Indice *tabela, int tamanho, int quantidade, TRegistro *item, FILE 
             opCount.comparisons++;
             *item = pagina[mid];  // retorna o item encontrado
 
-            gettimeofday(&stop, NULL);
+            endIndice = clock();
+            time = ((double)(endIndice - startIndice)) / CLOCKS_PER_SEC;
 
-            printf("# Busca binaria\n");
-            printf("Tempo de execucao: %lu ns\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
+            printf("Tempo de execucao (busca): %lfs\n", time);
             printf("Comparacoes: %d\n", opCount.comparisons);
             printf("Transferencias: %d\n\n", opCount.transfers);
 
@@ -164,8 +164,10 @@ int pesquisa(Indice *tabela, int tamanho, int quantidade, TRegistro *item, FILE 
         }
     }
 
-    gettimeofday(&stop, NULL);
-    printf("# Busca binaria: %lu ns\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
+    endIndice = clock();
+    time = ((double)(endIndice - startIndice)) / CLOCKS_PER_SEC;
+
+    printf("Tempo de execucao (busca): %lfs\n", time);
     printf("Comparacoes: %d\n", opCount.comparisons);
     printf("Transferencias: %d\n\n", opCount.transfers);
 

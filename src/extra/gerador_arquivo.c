@@ -202,4 +202,6 @@ void obter20RegistrosAleatorios(FILE *arquivo, int quantidade, int registros[20]
         fread(&aux, sizeof(TRegistro), 1, arquivo);
         registros[i] = aux.chave;
     }
+
+    rewind(arquivo);
 }
