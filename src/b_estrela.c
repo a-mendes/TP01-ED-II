@@ -1,276 +1,171 @@
 #include "b_estrela.h"
 
-
-void Inicializa (TipoApontadorEstrela *Arvore)
-{
-    *Arvore = NULL;
+void bstar_Inicializa(TipoApontadorEstrela *Arvore) {
+    Arvore = NULL;
 }
 
-int cont = 0;
+void bstar_Pesquisa(TRegistro *x, TipoApontadorEstrela *Ap, int key, int *nTransfer, int *nCompare) {
+    if ((*Ap) == NULL) {
+        printf("TipoRegistro nao esta presente na arvore\n");
+        return;
+    }
 
-void Pesquisa(TRegistro *x, TipoApontadorEstrela *Ap) {
     int i;
     TipoApontadorEstrela Pag;
-    Pag = *Ap;
+    (*Ap) = *Ap;
 
-    if((*Ap)->Pt == Interna) {
+    printf("%s\n", (*Ap)->Pt == Interna ? "Interna" : "Externa");
+
+    if ((*Ap)->Pt == Interna) {
         i = 1;
-
-        while(i < Pag->UU.U0.ni && x->chave > Pag->UU.U0.ri[i - 1].chave) i++;
-
-        if(x->chave < Pag->UU.U0.ri[i - 1].chave) {
-			printf("\n\nCont: %d -- i: %d -- ni: %d -- fol: %d -- chaAt: %d\n\n", cont++, i, Pag->UU.U0.ni, Pag->UU.U1.ne, Pag->UU.U0.ri[i].chave);
-            Pesquisa(x, &Pag->UU.U0.pi[i - 1]);
-		}
+        while (i < (*Ap)->UU.U0.ni && key > (*Ap)->UU.U0.ri[i - 1].chave) i++;
+        printf("Chave procurada: %d\n", key);
+        printf("Chave atual: %d\n", (*Ap)->UU.U0.ri[i - 1].chave);
+        printf("Chave à direita: %d\n", (*Ap)->UU.U0.ri[i].chave);
+        if (key < (*Ap)->UU.U0.ri[i - 1].chave)
+            bstar_Pesquisa(x, &(*Ap)->UU.U0.pi[i - 1], key, nTransfer, nCompare);
         else
-            Pesquisa(x, &Pag->UU.U0.pi[i]);
+            bstar_Pesquisa(x, &(*Ap)->UU.U0.pi[i], key, nTransfer, nCompare);
 
-        return;        
+        return;
     }
 
     i = 1;
-    while(i < Pag->UU.U1.ne && x->chave > Pag->UU.U1.re[i - 1].chave) i++;
 
-    if(x->chave == Pag->UU.U1.re[i - 1].chave) {
-        *x = Pag->UU.U1.re[i - 1];
+    while (i < (*Ap)->UU.U1.ne && key > (*Ap)->UU.U1.re[i - 1].chave) i++;
 
-        printf("Chave encontrada!\n");
-        printf("Chave: %d\n", x->chave);
-        printf("Dado1: %lld\n", x->dado1);
-        printf("Dado2: %s\n", x->dado2);
-    }
-    else 
+    printf("Chave que existe: %d\n", (*Ap)->UU.U1.re[i - 1].chave);
+
+    if (key == (*Ap)->UU.U1.re[i - 1].chave)
+        *x = (*Ap)->UU.U1.re[i - 1];
+    else
         printf("TipoRegistro nao esta presente na arvore\n");
 }
 
+void bstar_LerArquivo(FILE *file, int amount, TipoApontadorEstrela *Arvore) {
+    TRegistro reg;
+    int cont = 0;
+    while ((fread(&reg, sizeof(reg), 1, file) == 1) && cont < amount) {
+        bstar_Insere(reg, Arvore);
+        // escreverValor(Arvore);
+        cont++;
+    }
+}
 
-void InsereNaPagina(TipoApontadorEstrela Ap, TRegistro Reg, TipoApontadorEstrela ApDir) {//insere registro na pagina (folha ou indice)
-    int k;
-    int NaoAchouPosicao;
+void bstar_Ins(TRegistro reg, TipoApontadorEstrela Ap, short *Cresceu, TRegistro *RegRetorno, TipoApontadorEstrela *ApRetorno) {
+    long i = 1;
+    long j;
+    TipoApontadorEstrela ApTemp;
 
-    if(Ap->Pt == Interna){ //se for nó interno(indice) busca na arvore onde o registro será inserido
-		k = Ap->UU.U0.ni;
-		NaoAchouPosicao = (k > 0);
+    if (Ap == NULL) {
+        *Cresceu = 1;
+        (*RegRetorno) = reg;
+        (*ApRetorno) = NULL;
+        return;
+    }
 
-		while(NaoAchouPosicao) {
-			if (Reg.chave >= Ap->UU.U0.ri[k - 1].chave) {
-				NaoAchouPosicao = 0;
-				break;
-			}
+    while (i < Ap->UU.U0.ni && reg.chave > Ap->UU.U0.ri[i - 1].chave) i++;
 
-			Ap->UU.U0.ri[k] = Ap->UU.U0.ri[k - 1];
-			Ap->UU.U0.pi[k + 1] = Ap->UU.U0.pi[k];
-			k--;
-			if (k < 1)
-				NaoAchouPosicao = 0;
-		}
+    // Isso não vai acontecer por causa do conteúdo ser gerado sem repetição
+    if (reg.chave == Ap->UU.U0.ri[i - 1].chave) {
+        // printf("ERRO: Registro já existente\n");
+        bstar_InsereNaPagina(Ap, *RegRetorno, *ApRetorno);
+        *Cresceu = 0;
+        Ap->Pt = Interna;
+        return;
+    }
 
-		Ap->UU.U0.ri[k] = Reg;
-		Ap->UU.U0.pi[k + 1] = ApDir;
-		Ap->UU.U0.ni++;
-		return;
-		
-	}
-        //caso contrario, (nó externo(folha)) busca na pagina onde o registro será inserido
-	k = Ap->UU.U1.ne;
-	NaoAchouPosicao = (k > 0);
+    if (reg.chave < Ap->UU.U0.ri[i - 1].chave) i--;
+    bstar_Ins(reg, Ap->UU.U0.pi[i], Cresceu, RegRetorno, ApRetorno);
+    if (!*Cresceu) return;
+    if (Ap->UU.U0.ni < MM) { /* Página tem Espaço */
+        bstar_InsereNaPagina(Ap, *RegRetorno, *ApRetorno);
+        printf("%s\n", Ap->Pt == Interna ? "Interna" : "Externa");
+        *Cresceu = 0;
+        return;
+    }
 
-	while (NaoAchouPosicao)
-    {
-        if (Reg.chave >= Ap->UU.U1.re[k - 1].chave) 
-        {
+    /* Overflow: Página tem que ser dividida */
+    ApTemp = malloc(sizeof(TipoPagina));
+    ApTemp->UU.U0.ni = 0;
+    ApTemp->UU.U0.pi[0] = NULL;
+
+    if (i < M + 1) {
+        bstar_InsereNaPagina(ApTemp, Ap->UU.U0.ri[MM - 1], Ap->UU.U0.pi[MM]);
+        printf("Registro %d adicionada na página dividida.\n", RegRetorno->chave);
+        Ap->UU.U0.ni--;
+        bstar_InsereNaPagina(Ap, *RegRetorno, *ApRetorno);
+    } else
+        bstar_InsereNaPagina(ApTemp, *RegRetorno, *ApRetorno);
+
+    for (j = M + 2; j <= MM; j++) bstar_InsereNaPagina(ApTemp, Ap->UU.U0.ri[j - 1], Ap->UU.U0.pi[j]);
+
+    Ap->UU.U1.ne = M;
+    ApTemp->UU.U0.pi[0] = Ap->UU.U0.pi[M + 1];
+    //*RegRetorno = Ap->UU.U0.ri[M];
+    *ApRetorno = ApTemp;
+}
+
+void bstar_Insere(TRegistro reg, TipoApontadorEstrela *Ap) {
+    short Cresceu;
+    TRegistro RegRetorno;
+    TipoPagina *ApRetorno, *ApTemp;
+    bstar_Ins(reg, *Ap, &Cresceu, &RegRetorno, &ApRetorno);
+
+    if (Cresceu) { /* Arvore cresce na altura pela raiz */
+        ApTemp = (TipoPagina *)malloc(sizeof(TipoPagina));
+        ApTemp->UU.U1.ne = 1;
+        ApTemp->UU.U1.re[0] = RegRetorno;
+        ApTemp->UU.U0.pi[1] = ApRetorno;
+        ApTemp->UU.U0.pi[0] = *Ap;
+        *Ap = ApTemp;
+    }
+}
+
+void bstar_InsereNaPagina(TipoApontadorEstrela Ap, TRegistro Reg, TipoApontadorEstrela ApDir) {
+    int k = Ap->UU.U1.ne;
+    short NaoAchouPosicao = (k > 0);
+
+    while (NaoAchouPosicao) {
+        if (Reg.chave >= Ap->UU.U1.re[k - 1].chave) {
             NaoAchouPosicao = 0;
             break;
         }
         Ap->UU.U1.re[k] = Ap->UU.U1.re[k - 1];
+        Ap->UU.U0.pi[k + 1] = Ap->UU.U0.pi[k];
         k--;
-        if (k < 1)
-            NaoAchouPosicao = 0;
+        if (k < 1) NaoAchouPosicao = 0;
     }
+
     Ap->UU.U1.re[k] = Reg;
+    Ap->UU.U0.pi[k + 1] = ApDir;
     Ap->UU.U1.ne++;
+    // Ap->PT=Externa;
+    escreverValor(&Ap);
 }
 
-
-
-void Ins(TRegistro Reg, TipoApontadorEstrela Ap, int *Cresceu, TRegistro *RegRetorno, TipoApontadorEstrela *ApRetorno) {
-    TipoApontadorEstrela ApTemp, Pag;
-    long i = 1, j;
-    Pag = Ap;
-	int n;
-	
-	if (Ap == NULL) {
-		*Cresceu = 1;
-		(*RegRetorno) = Reg;
-		(*ApRetorno) = NULL;
-		return;
-	}
-	
-	//caminhamento em indices
-	if (Ap->Pt == Interna){
-		while (i < Pag->UU.U0.ni && Reg.chave > Pag->UU.U0.ri[i - 1].chave) {
-			i++;
-		}
-
-		if (Reg.chave < Pag->UU.U0.ri[i - 1].chave) {
-			i--;
-		}
-
-		Ins(Reg, Pag->UU.U0.pi[i], Cresceu, RegRetorno, ApRetorno);	
-		return;
-	
-		if (!*Cresceu) {
-			return;
-		}
-	
-	//Overflow. Página interna (indice) precisa ser dividida (excedeu limite MM)
-		ApTemp = (TipoApontadorEstrela) calloc(1, sizeof(TipoPagina));
-		ApTemp->UU.U0.ni = 0;
-		ApTemp->UU.U0.pi[0] = NULL;
-
-		if (i < M + 1) {
-			TRegistro RegTemp;
-			RegTemp.chave = Ap->UU.U0.ri[M - 1].chave;
-			InsereNaPagina(ApTemp, RegTemp, Ap->UU.U0.pi[M]);
-			Ap->UU.U0.ni--;
-			InsereNaPagina(Ap, *RegRetorno, *ApRetorno);
-		} 
-		else{
-			InsereNaPagina(ApTemp, *RegRetorno, *ApRetorno);
-		}
-
-		for (j = M + 2; j <= M; j++) {
-			TRegistro RegTemp;
-			RegTemp.chave = Ap->UU.U0.ri[j - 1].chave;
-			InsereNaPagina(ApTemp, RegTemp, Ap->UU.U0.pi[j]);
-		}
-		Ap->UU.U0.ni = M;
-		ApTemp->UU.U0.pi[0] = Ap->UU.U0.pi[M + 1];
-		(*RegRetorno).chave = Ap->UU.U0.ri[M].chave;
-		*ApRetorno = ApTemp;
-	}
-
-    //em paginas folha
-	while (i < Pag->UU.U1.ne && Reg.chave > Pag->UU.U1.re[i - 1].chave){
-			i++;
-	}
-	
-	if (Reg.chave == Pag->UU.U1.re[i - 1].chave) {   
-            //O registro ja esta presente
-            //*Cresceu = 0;
-            return;
+void escreverValor(TipoApontadorEstrela *Ap) {
+    printf("PT: %s", (*Ap)->Pt == Interna ? "Interna" : "Externa");
+    if ((*Ap)->Pt == Interna) {
+        for (int i = 0; i < (*Ap)->UU.U0.ni; ++i) {
+            printf("Codigo: %d\n", (*Ap)->UU.U0.ri[i].chave);
         }
-	
-	if (Reg.chave < Ap->UU.U1.re[i - 1].chave) {
-		i--;
-	}
-
-	Ins(Reg,NULL,Cresceu,RegRetorno,ApRetorno);
-	if (!*Cresceu) {
-		return;
-	}
-	
-	if (Pag->UU.U1.ne < M) {
-		//Pagina tem espaco 
-        InsereNaPagina(Pag, *RegRetorno, *ApRetorno);
-        *Cresceu = 0;
-        return;
+    } else {
+        for (int i = 0; i < (*Ap)->UU.U1.ne; ++i) {
+            printf("Codigo: %d\n", (*Ap)->UU.U1.re[i].chave);
+        }
     }
-		
-    //Overflow. Página externa (folha) precisa ser dividida (excedeu limite MM) 
-    ApTemp = (TipoApontadorEstrela) malloc(sizeof(TipoPagina));
-    ApTemp->Pt = Externa;
-	ApTemp->UU.U1.ne = 0;
-    if (i <= M + 1)
-    {
-        InsereNaPagina(ApTemp, Ap->UU.U1.re[M - 1], NULL);
-        Ap->UU.U1.ne--;
-        InsereNaPagina(Pag, *RegRetorno, *ApRetorno);
-    }
-    else
-        InsereNaPagina(ApTemp, *RegRetorno, *ApRetorno);
-    for (j = M + 2; j <= M; j++)
-        InsereNaPagina(ApTemp, Pag->UU.U1.re[j - 1], Ap->UU.U0.pi[j]);
-    Ap->UU.U1.ne = M;
-    *RegRetorno = Ap->UU.U1.re[M];
-	InsereNaPagina(ApTemp, Ap->UU.U1.re[M], NULL);
-    *ApRetorno = ApTemp;
-} 
-
-
-//Insere registro na arvore (onde sera inserido sera verificado no Ins)
-void Insere(TRegistro Reg, TipoApontadorEstrela *Ap) {
-    int Cresceu;
-    TRegistro RegRetorno;
-    TipoPagina *ApRetorno, *ApTemp;
-    
-    Ins(Reg, *Ap, &Cresceu, &RegRetorno, &ApRetorno);
-
-    if (Cresceu)   // Arvore cresce na altura pela raiz 
-    {	
-		ApTemp = (TipoPagina*) malloc (sizeof(TipoPagina));
-        if(ApRetorno == NULL){
-			ApTemp->Pt = Externa;
-			ApTemp->UU.U1.ne = 1;
-			ApTemp->UU.U1.re[0] = RegRetorno;
-		}
-		else{	
-			ApTemp->Pt = Interna;
-			ApTemp->UU.U0.ni = 1;
-            ApTemp->UU.U0.ri[0] = RegRetorno; // troca
-			//ApTemp->UU.U0.ri[0] = RegRetorno;
-			ApTemp->UU.U0.pi[1] = ApRetorno;
-			ApTemp->UU.U0.pi[0] = *Ap;
-		}
-		*Ap = ApTemp;
-	}
 }
 
-
-//Inicializa arvore b estrela
-void b_estrela(int quantidade, int chave, int opcional) {
-    TipoApontadorEstrela Ap;
-    TRegistro item;
-
-    char *registros = gerarArquivoAleatorio(quantidade);
-
-    FILE *arquivo = fopen(registros, "rb");
-
-    if(opcional)
-        printaRegistros(quantidade, arquivo);
- 
-    Ap = malloc(sizeof(TipoApontadorEstrela));
-    Inicializa (&Ap);
-
-    while (fread(&item, sizeof(TRegistro), 1, arquivo) == 1) {;
-        Insere(item, &Ap);
-    }
-
-    item.chave = chave;
-
-	// bstar_Imprime(Ap);
-
-    // printf("\n\n%d %d %d %d %d %d\n\n", item.chave, Ap->UU.U0.ni, Ap->UU.U0.pi[0]->UU.U0.ni, Ap->UU.U0.ri[0], Ap->UU.U0.pi[0]->UU.U0.ri[0].chave, Ap->UU.U0.pi[0]->UU.U0.ri[1].chave);
-    
-	printf("\n AQUI ANTES %s\n", item.dado2);
-    Pesquisa(&item , &Ap);
-	printf("\n AQUI DEPOIS %s  ch: %d  outros: %lld\n", item.dado2, item.chave, item.dado1);
-}
-
-
-
-void bstar_Imprime(TipoApontadorEstrela arvore) {
-    int i = 0;
-    if (arvore == NULL || arvore->Pt == Externa) return;
-
-    while (i <= arvore->UU.U0.ni) {
-        bstar_Imprime(arvore->UU.U0.pi[i]);
-
-        if (i != arvore->UU.U0.ni){
-            printf("%d ", arvore->UU.U0.ri[i].chave);
-			printf("\n\nCont: %d -- i: %d -- ni: %d -- pt: %d -- fol: %d \n\n", cont++, i, arvore->UU.U0.ni, arvore->Pt, arvore->UU.U1.ne);
-		}
-        i++;
-    }
-    
+void bstar_teste() {
+    TipoApontadorEstrela zap;
+    bstar_Inicializa(&zap);
+    bstar_Insere((TRegistro){1}, &zap);
+    bstar_Insere((TRegistro){2}, &zap);
+    bstar_Insere((TRegistro){3}, &zap);
+    bstar_Insere((TRegistro){4}, &zap);
+    TRegistro a;
+    a.chave = 1;
+    int az;
+    bstar_Pesquisa(&a, &zap, 1, &az, &az);
 }

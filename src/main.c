@@ -66,12 +66,9 @@ int main(int argc, char const *argv[]) {
             break;
         case 2:  // árvore binaria
             printf("### Pesquisa Binaria ###\n");
-            if (chave != -1)
-                binaria(quantidade, situacao, chave, opcional);
-            else
-                binariaRandomica(quantidade, situacao, chave, opcional);
-            break;
             
+            binaria(quantidade, situacao, chave, opcional);
+
             break;
         case 3:  // árvore B
             printf("### Pesquisa arvore B ###\n");
@@ -81,9 +78,9 @@ int main(int argc, char const *argv[]) {
             break;
         case 4:  // árvore B estrela
             printf("### Arvore B* ###\n");
-
-            b_estrela(quantidade, chave, opcional);
-            // ./TP1.exe pesquisa (Método) (Quantidade de registros) (Situação) (Chave) (Opcional)
+            bstar_teste();
+            // b_estrela(quantidade, chave, opcional);
+            //  ./TP1.exe pesquisa (Método) (Quantidade de registros) (Situação) (Chave) (Opcional)
 
             break;
         default:  // opção inválida

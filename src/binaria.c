@@ -6,11 +6,12 @@ void binaria(int quantidade, int situacao, int chave, int opcional){
     TRegistro *aux;  // item para leitura de registros
     double tamanho;  // tamanho da tabela de índices
     char *registros;  // arquivo com a quantidade de registros informada
-
-    // variáveis para medir o tempo de execução
-    clock_t startIndice, endIndice;
-    double time;
+    OpCounter operacoes = (OpCounter){0}; //Struct para contar as operações
     
+    // variáveis para medir o tempo de execução
+    clock_t startIndice, endIndice, start2Indice, end2Indice;
+    double time, time2;
+
     // Gera o arquivo com a quantidade de registros informada
     switch(situacao){
         case 1: 
@@ -37,82 +38,101 @@ void binaria(int quantidade, int situacao, int chave, int opcional){
     //alocando memoria pra variavel de registros
     aux = (TRegistro *)malloc(quantidade * sizeof(TRegistro));
     
-    // inicia a contagem do tempo
-    startIndice = clock();  
+    //caso seja o caso randomico
+    if(chave == -1){
+        binariaRandomica(quantidade, situacao, arquivo);
+        return;
+    }
 
     //lendo os registros do livro
     fread(aux, sizeof(TRegistro), quantidade, arquivo);
 
     //Iniciando a arvore
-    t = criarNoh(aux[0]); 
-
+    t = criarNoh(aux[0], &operacoes); 
+    
+    startIndice = clock();
     for(int i = 0; i < quantidade; i++)
-        insere(t, aux[i+1]);  // monta a arvore
-
-    // finaliza o cronômetro
-    endIndice = clock();                          
+        insere(t, aux[i+1], &operacoes);  // monta a arvore
+    
+    endIndice = clock();  
 
     time = ((double)(endIndice - startIndice)) / CLOCKS_PER_SEC;    // calcula o tempo de execução
-    printf("Tempo de execucao (criacao de indices): %lf\n", time);  // imprime o tempo de execução
 
-    printarResultado(pesquisar(t, chave), chave); // impressao do resultado da busca
+    //pesquisando e pegando o tempo de pesquisa
+    start2Indice = clock();
+
+    Noh* pesquisa = pesquisar(t, chave, &operacoes);
+
+    end2Indice = clock();  
+
+    time2 = ((double)(end2Indice - start2Indice)) / CLOCKS_PER_SEC;    // calcula o tempo de pesquisa
     
-    free(t);      // libera a arvore
-    free(aux);    // libera o auxiliar
 
-    fclose(arquivo);  // fecha o arquivo de registros
+    printarResultado(pesquisa, chave); // impressao do resultado da busca
+    // imprime o tempo de execução
+    printf("Tempo de execucao (criacao de indices): %lfs\n", time);  
+    // imprime o tempo de pesquisa
+    printf("\nTempo de execucao (pesquisa no arquivo): %lfs\nNumero de transferencias: %ld\nNumero de comparacoes: %ld\n\n", time2, operacoes.transfers, operacoes.comparisons);
+    finaliza(t, aux, arquivo); //encerra as variaveis
 }
 
 //rodar 20x com numeros aleatorios
-void binariaRandomica(int quantidade, int situacao, int chave, int opcional){
-    int n = 20;
-
-    while(n > 0){
-        chave = getRandomNumber();
-        binaria(quantidade, situacao, chave, opcional);
-        n--;
-    }
+void binariaRandomica(int quantidade, int situacao, FILE* arquivo){
+    int chaves[20];
+    obter20RegistrosAleatorios(arquivo, quantidade, chaves);
+    
+    for (int i = 0; i < 20; i++) 
+        binaria(quantidade, situacao, chaves[i], 0);
+                     
 }
 
 //pesquisar percorrendo a árvore
-Noh* pesquisar(Noh *raiz, int x)
+Noh* pesquisar(Noh *raiz, int x, OpCounter *operacoes)
 {
+    operacoes->comparisons++;
     if(raiz == NULL) //caso seja nulo
         return NULL;
 
+    operacoes->comparisons++;
     if(raiz->n.chave == x) //caso encontre
         return raiz;
-    else if(x < raiz->n.chave) // caso seja menor que a pesquisa, percorre recursivamente pra esquerda 
-        return pesquisar(raiz->left, x);
-    else // caso seja maior que a pesquisa, percorre recursivamente pra direita 
-        return pesquisar(raiz->right, x);
+
+    operacoes->comparisons++;
+    if(x < raiz->n.chave) // caso seja menor que a pesquisa, percorre recursivamente pra esquerda 
+        return pesquisar(raiz->left, x, operacoes);
+
+    operacoes->comparisons++;
+    if(x > raiz->n.chave) // caso seja maior que a pesquisa, percorre recursivamente pra direita 
+        return pesquisar(raiz->right, x, operacoes);
 }
 
 //inicializa um nó
-Noh* criarNoh(TRegistro x)
+Noh* criarNoh(TRegistro x, OpCounter *operacoes)
 {
     Noh* no = (Noh*) malloc(sizeof(Noh));
     
     no->n = x; //inserindo o valor x
     no->left = NULL; //inicializando o filho esquerdo como nulo
     no->right = NULL; //inicializando o filho direito como nulo
-    
+
+    operacoes->transfers++; //incrementa uma transferencia
     return no;
 }
 
-Noh* insere(Noh *raiz, TRegistro x)
+Noh* insere(Noh *raiz, TRegistro x, OpCounter *operacoes)
 {
     if(raiz == NULL)
-        raiz = criarNoh(x);
+        raiz = criarNoh(x, operacoes);
     else if(x.chave > raiz->n.chave)
-        raiz->right = insere(raiz->right, x); //Caso a chave seja maior, insere no filho direito
+        raiz->right = insere(raiz->right, x, operacoes); //Caso a chave seja maior, insere no filho direito
     else if(x.chave < raiz->n.chave)
-        raiz->left = insere(raiz->left, x); //Caso a chave seja menor, insere no filho esquerdo
+        raiz->left = insere(raiz->left, x, operacoes); //Caso a chave seja menor, insere no filho esquerdo
 
     return raiz;//caso ja exista
 }
 
 void printarResultado(Noh* resultado, int chave){
+    printf("\n---------------------------------------------\n");
     if (resultado != NULL) {
         printf("Registro encontrado!\n");
         printf("Chave: %d\n", resultado->n.chave);
@@ -122,4 +142,10 @@ void printarResultado(Noh* resultado, int chave){
         printf("Registro nao encontrado!\n");
         printf("Chave: %d\n\n", chave);
     }
+}
+
+void finaliza(Noh* t, TRegistro* aux, FILE* arquivo){
+    free(t);      // libera a arvore
+    free(aux);    // libera o auxiliar
+    fclose(arquivo);  // fecha o arquivo de registros
 }
